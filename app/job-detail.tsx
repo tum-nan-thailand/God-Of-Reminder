@@ -1,17 +1,28 @@
-// app/job-detail.tsx
-import { View, Text, Button } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState, useContext } from 'react';
+import { View, Text } from 'react-native';
+import { DatabaseContext } from './DatabaseContext';
+import { getFirstJob } from './database';
 
 export default function JobDetailScreen() {
-  const { id } = useLocalSearchParams();  // แก้ไขตรงนี้
-  const router = useRouter();
+  const [job, setJob] = useState(null);
+  const db = useContext(DatabaseContext);
 
-  // Fetch job details using ID logic here
+  useEffect(() => {
+    const fetchJob = async () => {
+      const jobDetail = await getFirstJob(db);
+      setJob(jobDetail);
+    };
+
+    fetchJob();
+  }, []);
+
+  if (!job) return <Text>Loading...</Text>;
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 24 }}>Job Detail for ID: {id}</Text>
-      <Button title="Back to List" onPress={() => router.push('/job-list')} />
+    <View>
+      <Text>Job ID: {job.id}</Text>
+      <Text>Value: {job.value}</Text>
+      <Text>Int Value: {job.intValue}</Text>
     </View>
   );
 }

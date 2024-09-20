@@ -1,24 +1,22 @@
-// app/add-job.tsx
-import { View, TextInput, Button } from 'react-native';
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import React, { useState, useContext } from 'react';
+import { View, Button, TextInput } from 'react-native';
+import { DatabaseContext } from './DatabaseContext'; // ใช้ Context หากต้องการเข้าถึง db ทั่วแอป
+import { addJob } from './database'; // Import ฟังก์ชันเพิ่มข้อมูล
 
 export default function AddJobScreen() {
-  const router = useRouter();
-  const [company, setCompany] = useState('');
-  const [position, setPosition] = useState('');
-  const [status, setStatus] = useState('Applied');
+  const [value, setValue] = useState('');
+  const [intValue, setIntValue] = useState('');
+  const db = useContext(DatabaseContext);
 
-  const handleSave = () => {
-    // Save job logic here
-    router.push('/job-list');
+  const handleAddJob = async () => {
+    await addJob(db, value, parseInt(intValue, 10)); // ใช้ addJob จาก database.ts
   };
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <TextInput placeholder="Company" value={company} onChangeText={setCompany} />
-      <TextInput placeholder="Position" value={position} onChangeText={setPosition} />
-      <Button title="Save Job" onPress={handleSave} />
+    <View>
+      <TextInput placeholder="Value" value={value} onChangeText={setValue} />
+      <TextInput placeholder="Int Value" value={intValue} onChangeText={setIntValue} keyboardType="numeric" />
+      <Button title="Add Job" onPress={handleAddJob} />
     </View>
   );
 }
