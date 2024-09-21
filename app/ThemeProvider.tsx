@@ -27,7 +27,7 @@ export const ThemeProvider = ({ children }) => {
   }, [colorScheme]);
 
   if (!fontsLoaded) {
-    return null; // แสดง SplashScreen หรือหน้าโหลดขณะที่กำลังโหลดฟอนต์
+    return null; 
   }
 
   return (

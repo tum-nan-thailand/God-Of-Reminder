@@ -1,12 +1,25 @@
+// app/screens/HomeScreen.tsx
 import React from 'react';
-import { View, StyleSheet, ImageBackground } from 'react-native';
+import { View, StyleSheet, ImageBackground, Alert } from 'react-native';
 import { Text, Button, Card, Title, Paragraph } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { clearDatabase } from '../database'; // นำเข้าฟังก์ชันสำหรับลบฐานข้อมูล
 
 export default function HomeScreen() {
   const router = useRouter();
+
+  // ฟังก์ชันสำหรับการลบฐานข้อมูล
+  const handleClearDatabase = async () => {
+    try {
+      await clearDatabase();
+      Alert.alert('Success', 'Database has been cleared successfully!');
+    } catch (error) {
+      console.error('Failed to clear database:', error);
+      Alert.alert('Error', 'Failed to clear the database.');
+    }
+  };
 
   return (
     <ImageBackground 
@@ -29,7 +42,7 @@ export default function HomeScreen() {
               <Card.Content style={styles.cardContent}>
                 <MaterialIcons name="folder-open" size={48} color="#fa9c3e" style={styles.cardIcon} />
                 <View style={styles.cardTextContainer}>
-                  <Title style={styles.cardTitle}>Job Applications</Title>
+                  <Title style={styles.cardTitle}>Job List</Title>
                   <Paragraph style={styles.cardText}>View and manage your job applications</Paragraph>
                 </View>
                 <Button mode="contained" style={styles.button}>View</Button>
@@ -58,6 +71,19 @@ export default function HomeScreen() {
               </Card.Content>
             </Card>
           </View>
+
+          {/* ปุ่มสำหรับลบฐานข้อมูล */}
+          <View style={styles.clearButtonContainer}>
+            <Button 
+              mode="contained" 
+              onPress={handleClearDatabase} 
+              style={styles.clearButton}
+              icon="delete"
+              color="#FF6347"
+            >
+              Clear Database
+            </Button>
+          </View>
         </View>
       </LinearGradient>
     </ImageBackground>
@@ -75,7 +101,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#fa9c3e', // เปลี่ยนสีของส่วนหัวให้เข้ากับโทนสีที่ใช้ในแอป
+    backgroundColor: '#fa9c3e', 
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     marginBottom: 10,
@@ -150,6 +176,16 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 25,
     marginVertical: 10,
-    backgroundColor: '#fa9c3e', // เปลี่ยนสีปุ่มเป็นสีส้มเข้ม
+    backgroundColor: '#fa9c3e', 
+  },
+  clearButtonContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  clearButton: {
+    borderRadius: 25,
+    marginVertical: 10,
+    backgroundColor: '#FF6347',
+    paddingHorizontal: 20,
   },
 });

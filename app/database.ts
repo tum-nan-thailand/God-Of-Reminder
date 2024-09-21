@@ -1,11 +1,11 @@
 // database.ts
-import * as SQLite from 'expo-sqlite';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import * as SQLite from "expo-sqlite";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 // ฟังก์ชันสำหรับการเปิดฐานข้อมูลแบบ Async
 export const initializeDatabase = async () => {
-  const db = await SQLite.openDatabaseAsync('jobTracker.db');
+  const db = await SQLite.openDatabaseAsync("jobTracker.db");
 
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
@@ -23,7 +23,14 @@ export const initializeDatabase = async () => {
 };
 
 // การเพิ่มข้อมูล
-export const addJob = async (db : SQLite.SQLiteDatabase, company, position, applicationDate, status, notes = '') => {
+export const addJob = async (
+  db: SQLite.SQLiteDatabase,
+  company,
+  position,
+  applicationDate,
+  status,
+  notes = ""
+) => {
   const result = await db.runAsync(
     "INSERT INTO jobs (company, position, applicationDate, status, notes) VALUES (?, ?, ?, ?, ?)",
     [company, position, applicationDate, status, notes]
@@ -31,20 +38,54 @@ export const addJob = async (db : SQLite.SQLiteDatabase, company, position, appl
   console.log("Job added with ID:", result.lastInsertRowId);
 };
 
-// การดึงข้อมูลทั้งหมด
+ 
 export const getAllJobs = async (db: SQLite.SQLiteDatabase) => {
-  const allRows = await db.getAllAsync("SELECT * FROM jobs");
-  return allRows;
+  try {
+    const allRows = await db.getAllAsync("SELECT * FROM jobs");
+
+    // ตรวจสอบว่าผลลัพธ์เป็น array ที่ว่างหรือไม่
+    if (!allRows || allRows.length === 0) {
+      console.log('No jobs found in the database.');
+      return []; // คืนค่าเป็น array ว่าง
+    }
+
+    return allRows;
+  } catch (error) {
+    console.error('Failed to fetch jobs:', error);
+    return []; 
+  }
 };
+
 
 // ฟังก์ชันเริ่มต้นการทำงานของฐานข้อมูลและเพิ่มข้อมูลตัวอย่าง
 export const initializeDB = async () => {
   const db = await initializeDatabase();
 
   // เพิ่มข้อมูลตัวอย่าง
-  await addJob(db, "Company A", "Software Engineer", "2024-09-21", "Applied", "Interview on Monday");
-  await addJob(db, "Company B", "Designer", "2024-09-18", "Interview", "Interview completed, waiting for response");
-  await addJob(db, "Company C", "Manager", "2024-09-15", "Offered", "Offer accepted, start next month");
+  await addJob(
+    db,
+    "Company A",
+    "Software Engineer",
+    "2024-09-21",
+    "Applied",
+    "Interview on Monday"
+  );
+  await addJob(
+    db,
+    "Company B",
+    "Designer",
+    "2024-09-18",
+    "Interview",
+    "Interview completed, waiting for response"
+  );
+  await addJob(
+    db,
+    "Company C",
+    "Manager",
+    "2024-09-15",
+    "Offered",
+    "Offer accepted, start next month"
+  );
 
   const jobs = await getAllJobs(db);
   return db;
@@ -64,12 +105,48 @@ export const exportDatabase = async () => {
 
     // แชร์ไฟล์ฐานข้อมูลที่ถูกคัดลอกแล้ว
     await Sharing.shareAsync(destinationPath, {
-      mimeType: 'application/octet-stream',
-      dialogTitle: 'Export Database',
+      mimeType: "application/octet-stream",
+      dialogTitle: "Export Database",
     });
 
-    console.log('Database exported successfully!');
+    console.log("Database exported successfully!");
   } catch (error) {
-    console.error('Failed to export database:', error);
+    console.error("Failed to export database:", error);
+  }
+};
+
+// ฟังก์ชันสำหรับปิดฐานข้อมูล
+export const closeDatabase = async (db) => {
+  try {
+    await db.closeAsync(); // ปิดฐานข้อมูลที่เปิดอยู่
+    console.log('Database closed successfully.');
+  } catch (error) {
+    console.error('Failed to close database:', error);
+  }
+};
+
+// ฟังก์ชันสำหรับลบฐานข้อมูลทั้งหมด
+export const clearDatabase = async () => {
+  try {
+    const db = await SQLite.openDatabaseAsync('jobTracker.db'); // เปิดฐานข้อมูลเพื่อให้สามารถปิดได้
+    await closeDatabase(db); // ปิดฐานข้อมูลก่อนที่จะลบ
+    await SQLite.deleteDatabaseAsync('jobTracker.db'); // ลบฐานข้อมูล
+    console.log('Database deleted successfully.');
+
+    const newDb = await initializeDatabase(); // เปิดฐานข้อมูลใหม่อีกครั้งหลังจากลบ
+  } catch (error) {
+    console.error('Failed to delete database:', error);
+  }
+};
+
+// ฟังก์ชันสำหรับรีเซ็ตฐานข้อมูลทั้งหมด
+export const resetDatabase = async (db) => {
+  try {
+    await clearDatabase(); // ลบฐานข้อมูลทั้งหมด
+    const db = await initializeDatabase(); // เริ่มต้นฐานข้อมูลใหม่
+    console.log("Database reset and re-initialized successfully.");
+    return db;
+  } catch (error) {
+    console.error("Failed to reset database:", error);
   }
 };
