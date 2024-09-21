@@ -1,12 +1,9 @@
+// app/_layout.tsx
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { initializeDB } from "./database";
 import { DatabaseContext } from "./DatabaseContext";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { ThemeProvider } from './ThemeProvider'; // นำเข้า ThemeProvider ที่สร้างขึ้น
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
@@ -47,7 +44,7 @@ export default function RootLayout() {
 
   return (
     <DatabaseContext.Provider value={db}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ThemeProvider>
         <Stack>
           <Stack.Screen name="job-list" options={{ title: "Job List" }} />
           <Stack.Screen name="add-job" options={{ title: "Add Job" }} />

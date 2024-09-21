@@ -23,7 +23,7 @@ export const initializeDatabase = async () => {
 };
 
 // การเพิ่มข้อมูล
-export const addJob = async (db, company, position, applicationDate, status, notes = '') => {
+export const addJob = async (db : SQLite.SQLiteDatabase, company, position, applicationDate, status, notes = '') => {
   const result = await db.runAsync(
     "INSERT INTO jobs (company, position, applicationDate, status, notes) VALUES (?, ?, ?, ?, ?)",
     [company, position, applicationDate, status, notes]
@@ -32,7 +32,7 @@ export const addJob = async (db, company, position, applicationDate, status, not
 };
 
 // การดึงข้อมูลทั้งหมด
-export const getAllJobs = async (db) => {
+export const getAllJobs = async (db: SQLite.SQLiteDatabase) => {
   const allRows = await db.getAllAsync("SELECT * FROM jobs");
   return allRows;
 };
