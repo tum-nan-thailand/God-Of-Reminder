@@ -38,7 +38,6 @@ export const addJob = async (
   console.log("Job added with ID:", result.lastInsertRowId);
 };
 
- 
 export const getAllJobs = async (db: SQLite.SQLiteDatabase) => {
   try {
     const allRows = await db.getAllAsync("SELECT * FROM jobs");
@@ -56,6 +55,21 @@ export const getAllJobs = async (db: SQLite.SQLiteDatabase) => {
   }
 };
 
+// ฟังก์ชันสำหรับดึงข้อมูลงานตาม ID
+export const getJobById = async (db: SQLite.SQLiteDatabase, jobId: number) => {
+  try {
+    const result = await db.getFirstAsync("SELECT * FROM jobs WHERE id = ?", [jobId]);
+    if (result) {
+      return result;
+    } else {
+      console.log(`No job found with ID ${jobId}.`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Failed to fetch job with ID ${jobId}:`, error);
+    throw error;
+  }
+};
 
 // ฟังก์ชันเริ่มต้นการทำงานของฐานข้อมูลและเพิ่มข้อมูลตัวอย่าง
 export const initializeDB = async () => {
@@ -125,6 +139,16 @@ export const closeDatabase = async (db) => {
   }
 };
 
+// ฟังก์ชันสำหรับลบงาน
+export const deleteJob = async (db: SQLite.SQLiteDatabase, jobId: number) => {
+  try {
+    await db.runAsync("DELETE FROM jobs WHERE id = ?", [jobId]);
+    console.log(`Job with ID ${jobId} deleted successfully.`);
+  } catch (error) {
+    console.error(`Failed to delete job with ID ${jobId}:`, error);
+  }
+};
+
 // ฟังก์ชันสำหรับลบฐานข้อมูลทั้งหมด
 export const clearDatabase = async () => {
   try {
@@ -134,6 +158,7 @@ export const clearDatabase = async () => {
     console.log('Database deleted successfully.');
 
     const newDb = await initializeDatabase(); // เปิดฐานข้อมูลใหม่อีกครั้งหลังจากลบ
+    return newDb
   } catch (error) {
     console.error('Failed to delete database:', error);
   }

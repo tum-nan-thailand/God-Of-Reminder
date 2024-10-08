@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, StyleSheet, TextInput } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { Card, Button } from 'react-native-paper';
+import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { DatabaseContext } from './DatabaseContext'; // ดึง Context สำหรับการใช้งาน Database
-import { getAllJobs } from './database'; // ฟังก์ชันสำหรับดึงข้อมูลจากฐานข้อมูล
+import { getAllJobs, deleteJob } from './database'; // ฟังก์ชันสำหรับดึงและลบข้อมูลจากฐานข้อมูล
 import { useTheme } from './ThemeProvider'; // นำเข้า useTheme จาก ThemeProvider
+import { useNavigation } from '@react-navigation/native'; // ใช้สำหรับการนำทาง
 
 export default function JobListScreen() {
   const [jobs, setJobs] = useState([]);
@@ -11,20 +13,21 @@ export default function JobListScreen() {
   const [filteredJobs, setFilteredJobs] = useState([]); // State สำหรับเก็บข้อมูลงานที่กรองแล้ว
   const db: any = useContext(DatabaseContext); // ใช้ Context สำหรับ Database
   const { theme } = useTheme(); // ดึงธีมจาก Context
+  const navigation = useNavigation(); // ใช้ useNavigation สำหรับการนำทาง
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const jobList = await getAllJobs(db); // ดึงข้อมูลจากฐานข้อมูล
-        setJobs(jobList);
-        setFilteredJobs(jobList); // ตั้งค่า filteredJobs เป็น jobList เริ่มต้น
-      } catch (error) {
-        console.error('Failed to fetch jobs:', error);
-      }
-    };
-
-    fetchJobs(); // เรียกใช้ฟังก์ชันดึงข้อมูลเมื่อ Component ถูก mount
+    fetchJobs();
   }, [db]);
+
+  const fetchJobs = async () => {
+    try {
+      const jobList = await getAllJobs(db); // ดึงข้อมูลจากฐานข้อมูล
+      setJobs(jobList);
+      setFilteredJobs(jobList);
+    } catch (error) {
+      console.error('Failed to fetch jobs:', error);
+    }
+  };
 
   // ฟังก์ชันสำหรับกรองข้อมูลตามคำค้นหา
   const handleSearch = (text: string) => {
@@ -42,13 +45,22 @@ export default function JobListScreen() {
     }
   };
 
+  const handleDeleteJob = async (jobId: number) => {
+    try {
+      await deleteJob(db, jobId);
+      Alert.alert('Success', 'Job deleted successfully!');
+      fetchJobs();
+    } catch (error) {
+      console.error('Failed to delete job:', error);
+      Alert.alert('Error', 'Failed to delete the job.');
+    }
+  };
+
   // ตรวจสอบว่ามีข้อมูลหรือไม่
   if (jobs.length === 0) {
     return (
       <View style={[styles.emptyContainer, { backgroundColor: theme.colors.background }]}>
-        <Text style={[styles.emptyText, { color: theme.colors.text }]}>
-          No jobs found. Add some jobs!
-        </Text>
+        <Text style={[styles.emptyText, { color: theme.colors.text }]}>No jobs found. Add some jobs!</Text>
       </View>
     );
   }
@@ -56,8 +68,9 @@ export default function JobListScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <TextInput
-        style={[styles.searchInput, { backgroundColor: theme.colors.card, color: theme.colors.text }]}
+        style={[styles.searchInput, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
         placeholder="Search jobs..."
+        placeholderTextColor={theme.colors.placeholder}
         value={searchTerm}
         onChangeText={handleSearch}
       />
@@ -66,27 +79,41 @@ export default function JobListScreen() {
         data={filteredJobs} // ใช้ข้อมูลที่ถูกกรองแล้ว
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <Card style={[styles.card, { backgroundColor: theme.colors.card }]}>
-            <Card.Title title={item.position} subtitle={item.company} />
+          <Card style={[styles.card, { backgroundColor: theme.colors.card, borderColor: theme.colors.primary, borderWidth: 1 }]}> 
+            <TouchableOpacity style={styles.deleteIcon} onPress={() => handleDeleteJob(item.id)}>
+              <MaterialIcons name="close" size={24} color={theme.colors.error} />
+            </TouchableOpacity>
+            <Card.Title
+              title={item.position}
+              subtitle={item.company}
+              titleStyle={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 22 }}
+              subtitleStyle={{ color: theme.colors.textSecondary, fontSize: 16 }}
+            />
             <Card.Content>
-              <Text style={[styles.text, { color: theme.colors.text }]}>
-                Status: {item.status}
-              </Text>
-              <Text style={[styles.text, { color: theme.colors.text }]}>
-                Applied on: {item.applicationDate}
-              </Text>
+              <View style={styles.cardContentRow}>
+                <Text style={[styles.text, { color: theme.colors.text }]}>Status:</Text>
+                <Text style={[styles.textValue, { color: theme.colors.primary }]}>{item.status}</Text>
+              </View>
+              <View style={styles.cardContentRow}>
+                <Text style={[styles.text, { color: theme.colors.text }]}>Applied on:</Text>
+                <Text style={[styles.textValue, { color: theme.colors.textSecondary }]}>{item.applicationDate}</Text>
+              </View>
               {item.notes ? (
-                <Text style={[styles.text, { color: theme.colors.text }]}>
-                  Notes: {item.notes}
-                </Text>
+                <View style={styles.cardContentRow}>
+                  <Text style={[styles.text, { color: theme.colors.text }]}>Notes:</Text>
+                  <Text style={[styles.textValue, { color: theme.colors.textSecondary }]}>{item.notes}</Text>
+                </View>
               ) : null}
             </Card.Content>
-            <Card.Actions>
-              <Button mode="text" color={theme.colors.primary}>
+            <Card.Actions style={styles.cardActions}>
+              <Button
+                mode="contained"
+                icon={() => <FontAwesome name="pencil" size={16} color={theme.colors.onPrimary} />}
+                labelStyle={{ color: theme.colors.onPrimary }}
+                style={[styles.button, { backgroundColor: theme.colors.primary }]}
+                onPress={() => navigation.navigate('edit-job', { jobId: item.id })}
+              >
                 Edit
-              </Button>
-              <Button mode="text" color={theme.colors.primary}>
-                Delete
               </Button>
             </Card.Actions>
           </Card>
@@ -104,26 +131,52 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   searchInput: {
-    padding: 10,
+    padding: 12,
     marginBottom: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderRadius: 25,
+    borderWidth: 1.5,
   },
   contentContainer: {
     paddingBottom: 10,
   },
   card: {
-    margin: 10,
-    borderRadius: 10,
+    marginVertical: 15,
+    borderRadius: 25,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowRadius: 6,
+    elevation: 6,
+    position: 'relative',
+  },
+  deleteIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
+  },
+  cardContentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 5,
   },
   text: {
-    fontSize: 16,
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  textValue: {
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  button: {
+    marginHorizontal: 8,
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 20,
+  },
+  cardActions: {
+    justifyContent: 'flex-end',
+    paddingRight: 10,
   },
   emptyContainer: {
     flex: 1,
@@ -132,6 +185,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
