@@ -4,12 +4,15 @@ import { Button, Text } from 'react-native-paper';
 import { useTheme } from './ThemeProvider'; // ดึงธีมจาก ThemeProvider
 import { DatabaseContext } from './DatabaseContext'; // ดึง Context สำหรับการใช้งาน Database
 import { getJobById, updateJob } from './database'; // ฟังก์ชันสำหรับดึงและอัปเดตข้อมูลจากฐานข้อมูล
+import { useRouter } from 'expo-router';
 
 import { useLocalSearchParams } from "expo-router";
 
 export default function EditJobScreen() {
   const { jobId } = useLocalSearchParams();
   const { theme } = useTheme(); // ดึงธีมจาก Context
+  const router = useRouter();
+
   const db = useContext(DatabaseContext); // ใช้ Context สำหรับ Database
 
   const [job, setJob] = useState({
@@ -38,7 +41,7 @@ export default function EditJobScreen() {
   const handleUpdateJob = async () => {
     try {
       await updateJob(db, jobId, job);
-      Alert.alert('Success', 'Job updated successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      Alert.alert('Success', 'Job updated successfully!', [{ text: 'OK', onPress: () => router.push('/') }]);
     } catch (error) {
       console.error('Failed to update job:', error);
       Alert.alert('Error', 'Failed to update the job.');

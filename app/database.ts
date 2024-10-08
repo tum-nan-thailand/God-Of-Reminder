@@ -2,7 +2,7 @@
 import * as SQLite from "expo-sqlite";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-
+import {} from 
 // ฟังก์ชันสำหรับการเปิดฐานข้อมูลแบบ Async
 export const initializeDatabase = async () => {
   const db = await SQLite.openDatabaseAsync("jobTracker.db");
@@ -15,7 +15,9 @@ export const initializeDatabase = async () => {
       position TEXT NOT NULL,
       applicationDate TEXT NOT NULL,
       status TEXT NOT NULL,
-      notes TEXT
+      notes TEXT,
+      salary TEXT,
+      location TEXT
     );
   `);
 
@@ -23,53 +25,22 @@ export const initializeDatabase = async () => {
 };
 
 // การเพิ่มข้อมูล
-export const addJob = async (
-  db: SQLite.SQLiteDatabase,
-  company,
-  position,
-  applicationDate,
-  status,
-  notes = ""
-) => {
-  const result = await db.runAsync(
-    "INSERT INTO jobs (company, position, applicationDate, status, notes) VALUES (?, ?, ?, ?, ?)",
-    [company, position, applicationDate, status, notes]
-  );
-  console.log("Job added with ID:", result.lastInsertRowId);
-};
-
-export const getAllJobs = async (db: SQLite.SQLiteDatabase) => {
-  try {
-    const allRows = await db.getAllAsync("SELECT * FROM jobs");
-
-    // ตรวจสอบว่าผลลัพธ์เป็น array ที่ว่างหรือไม่
-    if (!allRows || allRows.length === 0) {
-      console.log('No jobs found in the database.');
-      return []; // คืนค่าเป็น array ว่าง
-    }
-
-    return allRows;
-  } catch (error) {
-    console.error('Failed to fetch jobs:', error);
-    return []; 
-  }
-};
-
-// ฟังก์ชันสำหรับดึงข้อมูลงานตาม ID
-export const getJobById = async (db: SQLite.SQLiteDatabase, jobId: number) => {
-  try {
-    const result = await db.getFirstAsync("SELECT * FROM jobs WHERE id = ?", [jobId]);
-    if (result) {
-      return result;
-    } else {
-      console.log(`No job found with ID ${jobId}.`);
-      return null;
-    }
-  } catch (error) {
-    console.error(`Failed to fetch job with ID ${jobId}:`, error);
-    throw error;
-  }
-};
+// export const addJob = async (
+//   db: SQLite.SQLiteDatabase,
+//   company,
+//   position,
+//   applicationDate,
+//   status,
+//   notes = "",
+//   salary = "",
+//   location = ""
+// ) => {
+//   const result = await db.runAsync(
+//     "INSERT INTO jobs (company, position, applicationDate, status, notes, salary, location) VALUES (?, ?, ?, ?, ?, ?, ?)",
+//     [company, position, applicationDate, status, notes, salary, location]
+//   );
+//   console.log("Job added with ID:", result.lastInsertRowId);
+// };
 
 // ฟังก์ชันเริ่มต้นการทำงานของฐานข้อมูลและเพิ่มข้อมูลตัวอย่าง
 export const initializeDB = async () => {
@@ -82,7 +53,9 @@ export const initializeDB = async () => {
     "Software Engineer",
     "2024-09-21",
     "Applied",
-    "Interview on Monday"
+    "Interview on Monday",
+    "$100,000",
+    "New York"
   );
   await addJob(
     db,
@@ -90,7 +63,9 @@ export const initializeDB = async () => {
     "Designer",
     "2024-09-18",
     "Interview",
-    "Interview completed, waiting for response"
+    "Interview completed, waiting for response",
+    "$70,000",
+    "Los Angeles"
   );
   await addJob(
     db,
@@ -98,7 +73,9 @@ export const initializeDB = async () => {
     "Manager",
     "2024-09-15",
     "Offered",
-    "Offer accepted, start next month"
+    "Offer accepted, start next month",
+    "$120,000",
+    "Chicago"
   );
 
   const jobs = await getAllJobs(db);
@@ -139,15 +116,6 @@ export const closeDatabase = async (db) => {
   }
 };
 
-// ฟังก์ชันสำหรับลบงาน
-export const deleteJob = async (db: SQLite.SQLiteDatabase, jobId: number) => {
-  try {
-    await db.runAsync("DELETE FROM jobs WHERE id = ?", [jobId]);
-    console.log(`Job with ID ${jobId} deleted successfully.`);
-  } catch (error) {
-    console.error(`Failed to delete job with ID ${jobId}:`, error);
-  }
-};
 
 // ฟังก์ชันสำหรับลบฐานข้อมูลทั้งหมด
 export const clearDatabase = async () => {

@@ -1,113 +1,122 @@
-// app/screens/AddJobScreen.tsx
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Card, Text } from 'react-native-paper';
-import { DatabaseContext } from './DatabaseContext'; // ใช้ Context หากต้องการเข้าถึง db ทั่วแอป
-import { addJob } from './database'; // Import ฟังก์ชันเพิ่มข้อมูล
-import { useTheme } from './ThemeProvider'; // นำเข้า useTheme จาก ThemeProvider
+import { View, StyleSheet, TextInput, ScrollView, Alert } from 'react-native';
+import { Button, Text } from 'react-native-paper';
+import { useTheme } from './ThemeProvider'; // ดึงธีมจาก ThemeProvider
+import { DatabaseContext } from './DatabaseContext'; // ดึง Context สำหรับการใช้งาน Database
+import { addJob } from './database'; // ฟังก์ชันสำหรับการเพิ่มข้อมูลลงฐานข้อมูล
+import { useRouter } from 'expo-router';
 
 export default function AddJobScreen() {
-  const [company, setCompany] = useState('');
-  const [position, setPosition] = useState('');
-  const [applicationDate, setApplicationDate] = useState('');
-  const [status, setStatus] = useState('');
-  const [notes, setNotes] = useState('');
-  const db = useContext(DatabaseContext); // ใช้ Context สำหรับ Database
   const { theme } = useTheme(); // ดึงธีมจาก Context
+  const db = useContext(DatabaseContext); // ใช้ Context สำหรับ Database
+  const router = useRouter();
 
-  // ฟังก์ชันสำหรับเพิ่มข้อมูลงานใหม่ในฐานข้อมูล
+  const [job, setJob] = useState({
+    company: '',
+    position: '',
+    applicationDate: '',
+    status: '',
+    notes: '',
+    salary: '',
+    location: '',
+  });
+
   const handleAddJob = async () => {
+    if (!job.company || !job.position || !job.applicationDate || !job.status) {
+      Alert.alert('Error', 'Please fill in all required fields: Company, Position, Application Date, and Status.');
+      return;
+    }
     try {
-      await addJob(db, company, position, applicationDate, status, notes); // ใช้ addJob จาก database.ts
-      setCompany('');
-      setPosition('');
-      setApplicationDate('');
-      setStatus('');
-      setNotes('');
+      await addJob(db, job);
+      Alert.alert('Success', 'Job added successfully!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (error) {
       console.error('Failed to add job:', error);
+      Alert.alert('Error', 'Failed to add the job.');
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Card style={[styles.card, { backgroundColor: theme.colors.card }]}>
-        <Card.Title title="Add New Job" />
-        <Card.Content>
-          <TextInput
-            label="Company"
-            value={company}
-            onChangeText={setCompany}
-            style={[styles.input, { backgroundColor: theme.colors.surface }]}
-            mode="outlined"
-            theme={{ colors: { primary: theme.colors.primary } }}
-          />
-          <TextInput
-            label="Position"
-            value={position}
-            onChangeText={setPosition}
-            style={[styles.input, { backgroundColor: theme.colors.surface }]}
-            mode="outlined"
-            theme={{ colors: { primary: theme.colors.primary } }}
-          />
-          <TextInput
-            label="Application Date"
-            value={applicationDate}
-            onChangeText={setApplicationDate}
-            style={[styles.input, { backgroundColor: theme.colors.surface }]}
-            mode="outlined"
-            theme={{ colors: { primary: theme.colors.primary } }}
-            placeholder="YYYY-MM-DD"
-          />
-          <TextInput
-            label="Status"
-            value={status}
-            onChangeText={setStatus}
-            style={[styles.input, { backgroundColor: theme.colors.surface }]}
-            mode="outlined"
-            theme={{ colors: { primary: theme.colors.primary } }}
-            placeholder="e.g., Applied, Interview, Rejected"
-          />
-          <TextInput
-            label="Notes"
-            value={notes}
-            onChangeText={setNotes}
-            style={[styles.input, { backgroundColor: theme.colors.surface }]}
-            mode="outlined"
-            theme={{ colors: { primary: theme.colors.primary } }}
-            multiline
-          />
-          <Button
-            mode="contained"
-            onPress={handleAddJob}
-            style={styles.button}
-            theme={{ colors: { primary: theme.colors.primary } }}
-          >
-            Add Job
-          </Button>
-        </Card.Content>
-      </Card>
-    </View>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Company</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
+        value={job.company}
+        onChangeText={(text) => setJob({ ...job, company: text })}
+      />
+
+      <Text style={[styles.label, { color: theme.colors.text }]}>Position</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
+        value={job.position}
+        onChangeText={(text) => setJob({ ...job, position: text })}
+      />
+
+      <Text style={[styles.label, { color: theme.colors.text }]}>Application Date</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
+        value={job.applicationDate}
+        onChangeText={(text) => setJob({ ...job, applicationDate: text })}
+      />
+
+      <Text style={[styles.label, { color: theme.colors.text }]}>Status</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
+        value={job.status}
+        onChangeText={(text) => setJob({ ...job, status: text })}
+      />
+
+      <Text style={[styles.label, { color: theme.colors.text }]}>Notes</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
+        value={job.notes}
+        onChangeText={(text) => setJob({ ...job, notes: text })}
+      />
+
+      <Text style={[styles.label, { color: theme.colors.text }]}>Salary</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
+        value={job.salary}
+        onChangeText={(text) => setJob({ ...job, salary: text })}
+      />
+
+      <Text style={[styles.label, { color: theme.colors.text }]}>Location</Text>
+      <TextInput
+        style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text, borderColor: theme.colors.primary }]}
+        value={job.location}
+        onChangeText={(text) => setJob({ ...job, location: text })}
+      />
+
+      <Button
+        mode="contained"
+        onPress={handleAddJob}
+        style={[styles.button, { backgroundColor: theme.colors.primary }]}
+        labelStyle={{ color: theme.colors.onPrimary }}
+      >
+        Add Job
+      </Button>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
-    justifyContent: 'center',
   },
-  card: {
-    padding: 20,
-    borderRadius: 15,
-    elevation: 5,
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
   },
   input: {
+    padding: 10,
     marginBottom: 15,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   button: {
     marginTop: 20,
-    padding: 10,
-    borderRadius: 10,
+    paddingVertical: 10,
+    borderRadius: 25,
   },
 });

@@ -3,9 +3,9 @@ import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, Alert } 
 import { Card, Button } from 'react-native-paper';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { DatabaseContext } from './DatabaseContext'; // ดึง Context สำหรับการใช้งาน Database
-import { getAllJobs, deleteJob } from './database'; // ฟังก์ชันสำหรับดึงและลบข้อมูลจากฐานข้อมูล
 import { useTheme } from './ThemeProvider'; // นำเข้า useTheme จาก ThemeProvider
 import { useNavigation } from '@react-navigation/native'; // ใช้สำหรับการนำทาง
+import {getAllJobs,deleteJob} from "./service/Job"
 
 export default function JobListScreen() {
   const [jobs, setJobs] = useState([]);
@@ -21,7 +21,7 @@ export default function JobListScreen() {
 
   const fetchJobs = async () => {
     try {
-      const jobList = await getAllJobs(db); // ดึงข้อมูลจากฐานข้อมูล
+      const jobList = await getAllJobs(); // ดึงข้อมูลจากฐานข้อมูล
       setJobs(jobList);
       setFilteredJobs(jobList);
     } catch (error) {
@@ -47,7 +47,7 @@ export default function JobListScreen() {
 
   const handleDeleteJob = async (jobId: number) => {
     try {
-      await deleteJob(db, jobId);
+      await deleteJob(jobId);
       Alert.alert('Success', 'Job deleted successfully!');
       fetchJobs();
     } catch (error) {
