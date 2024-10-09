@@ -2,7 +2,7 @@
 import * as SQLite from "expo-sqlite";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import {} from 
+import { addJob, getAllJobs } from "./service/Job/Job";
 // ฟังก์ชันสำหรับการเปิดฐานข้อมูลแบบ Async
 export const initializeDatabase = async () => {
   const db = await SQLite.openDatabaseAsync("jobTracker.db");
@@ -44,39 +44,37 @@ export const initializeDatabase = async () => {
 
 // ฟังก์ชันเริ่มต้นการทำงานของฐานข้อมูลและเพิ่มข้อมูลตัวอย่าง
 export const initializeDB = async () => {
+  await clearDatabase(); // ลบฐานข้อมูลทั้งหมด
   const db = await initializeDatabase();
 
   // เพิ่มข้อมูลตัวอย่าง
-  await addJob(
-    db,
-    "Company A",
-    "Software Engineer",
-    "2024-09-21",
-    "Applied",
-    "Interview on Monday",
-    "$100,000",
-    "New York"
-  );
-  await addJob(
-    db,
-    "Company B",
-    "Designer",
-    "2024-09-18",
-    "Interview",
-    "Interview completed, waiting for response",
-    "$70,000",
-    "Los Angeles"
-  );
-  await addJob(
-    db,
-    "Company C",
-    "Manager",
-    "2024-09-15",
-    "Offered",
-    "Offer accepted, start next month",
-    "$120,000",
-    "Chicago"
-  );
+  await addJob(db, {
+    company: "Company A",
+    position: "Software Engineer",
+    applicationDate: "2024-09-21",
+    status: "Applied",
+    notes: "Interview on Monday",
+    salary: "$100,000",
+    location: "New York",
+  });
+  await addJob(db, {
+    company: "Company B",
+    position: "Designer",
+    applicationDate: "2024-09-18",
+    status: "Interview",
+    notes: "Interview completed, waiting for response",
+    salary: "$70,000",
+    location: "Los Angeles",
+  });
+  await addJob(db, {
+    company: "Company C",
+    position: "Manager",
+    applicationDate: "2024-09-15",
+    status: "Offered",
+    notes: "Offer accepted, start next month",
+    salary: "$120,000",
+    location: "Chicago",
+  });
 
   const jobs = await getAllJobs(db);
   return db;
@@ -107,33 +105,32 @@ export const exportDatabase = async () => {
 };
 
 // ฟังก์ชันสำหรับปิดฐานข้อมูล
-export const closeDatabase = async (db) => {
+export const closeDatabase = async (db: SQLite.SQLiteDatabase) => {
   try {
     await db.closeAsync(); // ปิดฐานข้อมูลที่เปิดอยู่
-    console.log('Database closed successfully.');
+    console.log("Database closed successfully.");
   } catch (error) {
-    console.error('Failed to close database:', error);
+    console.error("Failed to close database:", error);
   }
 };
-
 
 // ฟังก์ชันสำหรับลบฐานข้อมูลทั้งหมด
 export const clearDatabase = async () => {
   try {
-    const db = await SQLite.openDatabaseAsync('jobTracker.db'); // เปิดฐานข้อมูลเพื่อให้สามารถปิดได้
+    const db = await SQLite.openDatabaseAsync("jobTracker.db"); // เปิดฐานข้อมูลเพื่อให้สามารถปิดได้
     await closeDatabase(db); // ปิดฐานข้อมูลก่อนที่จะลบ
-    await SQLite.deleteDatabaseAsync('jobTracker.db'); // ลบฐานข้อมูล
-    console.log('Database deleted successfully.');
+    await SQLite.deleteDatabaseAsync("jobTracker.db"); // ลบฐานข้อมูล
+    console.log("Database deleted successfully.");
 
     const newDb = await initializeDatabase(); // เปิดฐานข้อมูลใหม่อีกครั้งหลังจากลบ
-    return newDb
+    return newDb;
   } catch (error) {
-    console.error('Failed to delete database:', error);
+    console.error("Failed to delete database:", error);
   }
 };
 
 // ฟังก์ชันสำหรับรีเซ็ตฐานข้อมูลทั้งหมด
-export const resetDatabase = async (db) => {
+export const resetDatabase = async () => {
   try {
     await clearDatabase(); // ลบฐานข้อมูลทั้งหมด
     const db = await initializeDatabase(); // เริ่มต้นฐานข้อมูลใหม่
