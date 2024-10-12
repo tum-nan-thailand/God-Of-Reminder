@@ -5,7 +5,7 @@ export const addJob = async (
   body: {
     company: string;
     position: string;
-    applicationDate: string;
+    jobdate: string;
     status: string;
     notes?: string;
     salary?: string;
@@ -15,15 +15,19 @@ export const addJob = async (
   const {
     company = "",
     position = "",
-    applicationDate = "",
+    jobdate = "",
     status = "",
     notes = "",
     salary = "",
     location = "",
   } = body;
+
+  // Convert jobdate to 'YYYY-MM-DD' format
+  const formattedDate = new Date(jobdate).toISOString().split("T")[0];
+
   const result = await db.runAsync(
-    "INSERT INTO jobs (company, position, applicationDate, status, notes, salary, location) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [company, position, applicationDate, status, notes, salary, location]
+    "INSERT INTO jobs (company, position, jobdate, status, notes, salary, location) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [company, position, formattedDate, status, notes, salary, location]
   );
   console.log("Job added with ID:", result.lastInsertRowId);
 };
@@ -35,7 +39,7 @@ export const updateJob = async (
     jobId: number;
     company: string;
     position: string;
-    applicationDate: string;
+    jobdate: string;
     status: string;
     notes?: string;
     salary?: string;
@@ -45,15 +49,19 @@ export const updateJob = async (
   const {
     company,
     position,
-    applicationDate,
+    jobdate,
     status,
     notes = "",
     salary = "",
     location = "",
   } = body;
-  const result = await db.runAsync(
-    "UPDATE jobs SET company = ?, position = ?, applicationDate = ?, status = ?, notes = ?, salary = ?, location = ? WHERE id = ?",
-    [company, position, applicationDate, status, notes, salary, location, jobId]
+
+  // Convert jobdate to 'YYYY-MM-DD' format
+  const formattedDate = new Date(jobdate).toISOString().split("T")[0];
+
+  await db.runAsync(
+    "UPDATE jobs SET company = ?, position = ?, jobdate = ?, status = ?, notes = ?, salary = ?, location = ? WHERE id = ?",
+    [company, position, formattedDate, status, notes, salary, location, jobId]
   );
   console.log("Job updated with ID:", jobId);
 };
@@ -83,7 +91,10 @@ export const getJobById = async (db: SQLite.SQLiteDatabase, jobId: number) => {
     const result = await db.getFirstAsync("SELECT * FROM jobs WHERE id = ?", [
       jobId,
     ]);
+
     if (result) {
+      console.log("fetchedJob", result);
+
       return result;
     } else {
       console.log(`No job found with ID ${jobId}.`);

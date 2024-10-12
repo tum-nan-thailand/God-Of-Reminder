@@ -3,7 +3,7 @@ import { View, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Text, Button, Card, Title, Paragraph } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { clearDatabase } from '../database'; // นำเข้าฟังก์ชันสำหรับลบฐานข้อมูล
+import { clearDatabase } from '../sqlite/Job/Db'; // นำเข้าฟังก์ชันสำหรับลบฐานข้อมูล
 
 export default function HomeScreen() {
   const router = useRouter();

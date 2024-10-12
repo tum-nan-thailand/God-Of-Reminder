@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text } from 'react-native';
 import { DatabaseContext } from './DatabaseContext';
-import { getFirstJob } from './database';
+import { getFirstJob } from './sqlite/Job/Db';
 
 export default function JobDetailScreen() {
   const [job, setJob] = useState(null);

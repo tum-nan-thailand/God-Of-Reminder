@@ -2,7 +2,7 @@
 import * as SQLite from "expo-sqlite";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import { addJob, getAllJobs } from "./service/Job/Job";
+import { addJob, getAllJobs } from "./JobData";
 // ฟังก์ชันสำหรับการเปิดฐานข้อมูลแบบ Async
 export const initializeDatabase = async () => {
   const db = await SQLite.openDatabaseAsync("jobTracker.db");
@@ -13,10 +13,10 @@ export const initializeDatabase = async () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       company TEXT NOT NULL,
       position TEXT NOT NULL,
-      applicationDate TEXT NOT NULL,
+      jobdate TEXT NOT NULL,
       status TEXT NOT NULL,
       notes TEXT,
-      salary TEXT,
+      salary INTEGER,
       location TEXT
     );
   `);
@@ -24,23 +24,6 @@ export const initializeDatabase = async () => {
   return db;
 };
 
-// การเพิ่มข้อมูล
-// export const addJob = async (
-//   db: SQLite.SQLiteDatabase,
-//   company,
-//   position,
-//   applicationDate,
-//   status,
-//   notes = "",
-//   salary = "",
-//   location = ""
-// ) => {
-//   const result = await db.runAsync(
-//     "INSERT INTO jobs (company, position, applicationDate, status, notes, salary, location) VALUES (?, ?, ?, ?, ?, ?, ?)",
-//     [company, position, applicationDate, status, notes, salary, location]
-//   );
-//   console.log("Job added with ID:", result.lastInsertRowId);
-// };
 
 // ฟังก์ชันเริ่มต้นการทำงานของฐานข้อมูลและเพิ่มข้อมูลตัวอย่าง
 export const initializeDB = async () => {
@@ -51,7 +34,7 @@ export const initializeDB = async () => {
   await addJob(db, {
     company: "Company A",
     position: "Software Engineer",
-    applicationDate: "2024-09-21",
+    jobdate: "2024-09-21",
     status: "Applied",
     notes: "Interview on Monday",
     salary: "$100,000",
@@ -60,7 +43,7 @@ export const initializeDB = async () => {
   await addJob(db, {
     company: "Company B",
     position: "Designer",
-    applicationDate: "2024-09-18",
+    jobdate: "2024-09-18",
     status: "Interview",
     notes: "Interview completed, waiting for response",
     salary: "$70,000",
@@ -69,7 +52,7 @@ export const initializeDB = async () => {
   await addJob(db, {
     company: "Company C",
     position: "Manager",
-    applicationDate: "2024-09-15",
+    jobdate: "2024-09-15",
     status: "Offered",
     notes: "Offer accepted, start next month",
     salary: "$120,000",

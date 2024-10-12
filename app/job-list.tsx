@@ -13,8 +13,8 @@ import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import { DatabaseContext } from "./DatabaseContext"; // ดึง Context สำหรับการใช้งาน Database
 import { useTheme } from "./ThemeProvider"; // นำเข้า useTheme จาก ThemeProvider
 import { useNavigation } from "@react-navigation/native"; // ใช้สำหรับการนำทาง
-import { getAllJobs, deleteJob } from "./service/Job/Job";
-import { JobInterface } from "./service/Job/Job.Interface";
+import { getAllJobs, deleteJob } from "./sqlite/Job/JobData";
+import { JobInterface } from "./sqlite/Job/Job.Interface";
 
  
 export default function JobListScreen() {
@@ -160,7 +160,7 @@ export default function JobListScreen() {
                     { color: theme.colors.textSecondary },
                   ]}
                 >
-                  {item.applicationDate}
+                  {item.jobdate}
                 </Text>
               </View>
               {item.notes ? (

@@ -2,7 +2,7 @@ export interface JobInterface {
   id: number;
   company: string;
   position: string;
-  applicationDate: string;
+  jobdate: string;
   status: string;
   notes?: string;
   salary?: string;

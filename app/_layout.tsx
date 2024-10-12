@@ -1,7 +1,7 @@
 // app/_layout.tsx
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { initializeDB } from "./database";
+import { initializeDB } from "./sqlite/Job/Db";
 import { DatabaseContext } from "./DatabaseContext";
 import { ThemeProvider } from './ThemeProvider'; // นำเข้า ThemeProvider ที่สร้างขึ้น
 import { useFonts } from "expo-font";
@@ -50,6 +50,8 @@ export default function RootLayout() {
           <Stack.Screen name="add-job" options={{ title: "Add Job" }} />
           <Stack.Screen name="job-detail" options={{ title: "Job Detail" }} />
           <Stack.Screen name="profile" options={{ title: "Profile" }} />
+          <Stack.Screen name="edit-job" options={{ title: "Edit Job" }} />
+
           <Stack.Screen
             name="schedule-interview"
             options={{ title: "Schedule Interview" }}
