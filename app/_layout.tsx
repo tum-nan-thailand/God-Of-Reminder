@@ -3,11 +3,12 @@ import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { initializeDB } from "./sqlite/Job/Db";
 import { DatabaseContext } from "./DatabaseContext";
-import { ThemeProvider } from './ThemeProvider'; // นำเข้า ThemeProvider ที่สร้างขึ้น
+import { ThemeProvider } from "./ThemeProvider"; // นำเข้า ThemeProvider ที่สร้างขึ้น
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import FlashMessage from "react-native-flash-message";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,13 +46,12 @@ export default function RootLayout() {
   return (
     <DatabaseContext.Provider value={db}>
       <ThemeProvider>
-        <Stack>
-          <Stack.Screen name="job-list" options={{ title: "Job List" }} />
+        <FlashMessage position="top" />
+        <Stack screenOptions={{ headerShown: true }}>
           <Stack.Screen name="add-job" options={{ title: "Add Job" }} />
           <Stack.Screen name="job-detail" options={{ title: "Job Detail" }} />
           <Stack.Screen name="profile" options={{ title: "Profile" }} />
           <Stack.Screen name="edit-job" options={{ title: "Edit Job" }} />
-
           <Stack.Screen
             name="schedule-interview"
             options={{ title: "Schedule Interview" }}

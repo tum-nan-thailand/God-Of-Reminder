@@ -10,28 +10,32 @@ import {
 } from "react-native";
 import { Card, Button } from "react-native-paper";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
-import { DatabaseContext } from "./DatabaseContext"; // ดึง Context สำหรับการใช้งาน Database
-import { useTheme } from "./ThemeProvider"; // นำเข้า useTheme จาก ThemeProvider
-import { useNavigation } from "@react-navigation/native"; // ใช้สำหรับการนำทาง
-import { getAllJobs, deleteJob } from "./sqlite/Job/JobData";
-import { JobInterface } from "./sqlite/Job/Job.Interface";
+import { DatabaseContext } from "../DatabaseContext"; 
+import { useTheme } from "../ThemeProvider";
+import { useNavigation } from "@react-navigation/native"; 
+import { getAllJobs, deleteJob } from "../sqlite/Job/JobData";
+import { JobInterface } from "../sqlite/Job/Job.Interface";
+import { showMessage } from "react-native-flash-message";
 
- 
 export default function JobListScreen() {
   const [jobs, setJobs] = useState<JobInterface[]>([]);
-  const [searchTerm, setSearchTerm] = useState(""); // State สำหรับเก็บคำค้นหา
-  const [filteredJobs, setFilteredJobs] = useState<JobInterface[]>([]); // State สำหรับเก็บข้อมูลงานที่กรองแล้ว
-  const db: any = useContext(DatabaseContext); // ใช้ Context สำหรับ Database
-  const { theme } = useTheme(); // ดึงธีมจาก Context
-  const navigation = useNavigation(); // ใช้ useNavigation สำหรับการนำทาง
+  const [searchTerm, setSearchTerm] = useState(""); 
+  const [filteredJobs, setFilteredJobs] = useState<JobInterface[]>([]);
+  const db: any = useContext(DatabaseContext); 
+  const { theme } = useTheme(); 
+  const navigation = useNavigation(); 
 
   useEffect(() => {
     fetchJobs();
   }, [db]);
 
+  // useEffect(() => {
+  //   navigation.setOptions({ headerShown: true });
+  // }, [navigation]);
+
   const fetchJobs = async () => {
     try {
-      const jobList = await getAllJobs(db); // ดึงข้อมูลจากฐานข้อมูล
+      const jobList = await getAllJobs(db); 
       setJobs(jobList);
       setFilteredJobs(jobList);
     } catch (error) {
@@ -39,35 +43,38 @@ export default function JobListScreen() {
     }
   };
 
-  // ฟังก์ชันสำหรับกรองข้อมูลตามคำค้นหา
   const handleSearch = (text: string) => {
     setSearchTerm(text);
 
     if (text === "") {
-      setFilteredJobs(jobs); // แสดงข้อมูลทั้งหมดถ้าไม่มีคำค้นหา
+      setFilteredJobs(jobs);
     } else {
       const filtered = jobs.filter(
         (job) =>
           job.position.toLowerCase().includes(text.toLowerCase()) ||
           job.company.toLowerCase().includes(text.toLowerCase()) ||
-          job.status.toLowerCase().includes(text.toLowerCase()) // กรองตามตำแหน่ง, บริษัท, และสถานะ
+          job.status.toLowerCase().includes(text.toLowerCase())
       );
-      setFilteredJobs(filtered); // อัปเดตข้อมูลที่กรองแล้ว
+      setFilteredJobs(filtered);
     }
   };
 
   const handleDeleteJob = async (jobId: number) => {
     try {
       await deleteJob(db, jobId);
-      Alert.alert("Success", "Job deleted successfully!");
+      showMessage({
+        message: "สำเร็จ",
+        description: "ลบงานเรียบร้อยแล้ว!",
+        type: "success",
+        icon: "auto",
+      });
       fetchJobs();
     } catch (error) {
       console.error("Failed to delete job:", error);
-      Alert.alert("Error", "Failed to delete the job.");
+      Alert.alert("ข้อผิดพลาด", "ไม่สามารถลบงานได้");
     }
   };
 
-  // ตรวจสอบว่ามีข้อมูลหรือไม่
   if (jobs.length === 0) {
     return (
       <View
@@ -77,7 +84,7 @@ export default function JobListScreen() {
         ]}
       >
         <Text style={[styles.emptyText, { color: theme.colors.text }]}>
-          No jobs found. Add some jobs!
+          ไม่พบงานที่บันทึกไว้ กรุณาเพิ่มงานใหม่!
         </Text>
       </View>
     );
@@ -96,14 +103,14 @@ export default function JobListScreen() {
             borderColor: theme.colors.primary,
           },
         ]}
-        placeholder="Search jobs..."
+        placeholder="ค้นหางาน..."
         placeholderTextColor={theme.colors.placeholder}
         value={searchTerm}
         onChangeText={handleSearch}
       />
 
       <FlatList
-        data={filteredJobs} // ใช้ข้อมูลที่ถูกกรองแล้ว
+        data={filteredJobs}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <Card
@@ -128,7 +135,7 @@ export default function JobListScreen() {
             </TouchableOpacity>
             <Card.Title
               title={item.position}
-              subtitle={item.company}
+              subtitle={`บริษัท: ${item.company}`}
               titleStyle={{
                 color: theme.colors.primary,
                 fontWeight: "bold",
@@ -142,7 +149,7 @@ export default function JobListScreen() {
             <Card.Content>
               <View style={styles.cardContentRow}>
                 <Text style={[styles.text, { color: theme.colors.text }]}>
-                  Status:
+                  สถานะ:
                 </Text>
                 <Text
                   style={[styles.textValue, { color: theme.colors.primary }]}
@@ -152,7 +159,7 @@ export default function JobListScreen() {
               </View>
               <View style={styles.cardContentRow}>
                 <Text style={[styles.text, { color: theme.colors.text }]}>
-                  Applied on:
+                  วันที่สมัคร:
                 </Text>
                 <Text
                   style={[
@@ -166,7 +173,7 @@ export default function JobListScreen() {
               {item.notes ? (
                 <View style={styles.cardContentRow}>
                   <Text style={[styles.text, { color: theme.colors.text }]}>
-                    Notes:
+                    หมายเหตุ:
                   </Text>
                   <Text
                     style={[
@@ -198,7 +205,7 @@ export default function JobListScreen() {
                   navigation.navigate("edit-job", { jobId: item.id })
                 }
               >
-                Edit
+                แก้ไข
               </Button>
             </Card.Actions>
           </Card>
@@ -214,6 +221,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    marginTop:'10%'
   },
   searchInput: {
     padding: 12,

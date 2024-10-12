@@ -7,6 +7,7 @@ import { addJob } from "./sqlite/Job/JobData";
 import { useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker"; // นำเข้า DateTimePickerModal
 import { Picker } from "@react-native-picker/picker"; // ใช้ Picker สำหรับการเลือกสถานะ
+import { showMessage } from "react-native-flash-message";
 
 export default function AddJobScreen() {
   const { theme } = useTheme(); // ดึงธีมจาก Context
@@ -26,20 +27,32 @@ export default function AddJobScreen() {
 
   const handleAddJob = async () => {
     if (!job.company || !job.position || !job.jobdate || !job.status) {
-      Alert.alert(
-        "Error",
-        "Please fill in all required fields: Company, Position, Application Date, and Status."
-      );
+      showMessage({
+        message: "ข้อผิดพลาด",
+        description:
+          "กรุณากรอกข้อมูลที่จำเป็นให้ครบ: ชื่อบริษัท, ตำแหน่ง, วันที่สมัคร, และสถานะ",
+        type: "danger",
+        icon: "auto",
+      });
       return;
     }
     try {
       await addJob(db, job);
-      Alert.alert("Success", "Job added successfully!", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      showMessage({
+        message: "สำเร็จ",
+        description: "เพิ่มงานเรียบร้อยแล้ว!",
+        type: "success",
+        icon: "auto",
+      });
+      router.push("/");
     } catch (error) {
-      console.error("Failed to add job:", error);
-      Alert.alert("Error", "Failed to add the job.");
+      console.error("เพิ่มงานล้มเหลว:", error);
+      showMessage({
+        message: "ข้อผิดพลาด",
+        description: "ไม่สามารถเพิ่มงานได้",
+        type: "danger",
+        icon: "auto",
+      });
     }
   };
 
@@ -50,27 +63,25 @@ export default function AddJobScreen() {
         { backgroundColor: theme.colors.background },
       ]}
     >
-      <Text style={[styles.label, { color: theme.colors.text }]}>Company</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>ชื่อบริษัท</Text>
       <TextInput
         mode="outlined"
         style={styles.input}
         value={job.company}
         onChangeText={(text) => setJob({ ...job, company: text })}
-        placeholder="Enter company name"
+        placeholder="ระบุชื่อบริษัท"
       />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>Position</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>ตำแหน่ง</Text>
       <TextInput
         mode="outlined"
         style={styles.input}
         value={job.position}
         onChangeText={(text) => setJob({ ...job, position: text })}
-        placeholder="Enter position"
+        placeholder="ระบุตำแหน่งงาน"
       />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>
-        Application Date
-      </Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>วันที่สมัคร</Text>
       <Button
         mode="outlined"
         onPress={() => setShowDatePicker(true)}
@@ -88,22 +99,22 @@ export default function AddJobScreen() {
         onCancel={() => setShowDatePicker(false)}
       />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>Status</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>สถานะ</Text>
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={job.status}
           onValueChange={(itemValue) => setJob({ ...job, status: itemValue })}
           style={{ color: theme.colors.text }}
         >
-          <Picker.Item label="Select Status" value="" />
-          <Picker.Item label="Applied" value="Applied" />
-          <Picker.Item label="Interview" value="Interview" />
-          <Picker.Item label="Offered" value="Offered" />
-          <Picker.Item label="Rejected" value="Rejected" />
+          <Picker.Item label="เลือกสถานะ" value="" />
+          <Picker.Item label="สมัครแล้ว" value="Applied" />
+          <Picker.Item label="สัมภาษณ์" value="Interview" />
+          <Picker.Item label="ได้รับข้อเสนอ" value="Offered" />
+          <Picker.Item label="ถูกปฏิเสธ" value="Rejected" />
         </Picker>
       </View>
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>Notes</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>หมายเหตุ</Text>
       <TextInput
         mode="outlined"
         style={styles.input}
@@ -111,10 +122,10 @@ export default function AddJobScreen() {
         numberOfLines={4}
         value={job.notes}
         onChangeText={(text) => setJob({ ...job, notes: text })}
-        placeholder="Enter notes"
+        placeholder="ระบุหมายเหตุ"
       />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>Salary</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>เงินเดือน</Text>
       <TextInput
         mode="outlined"
         style={styles.input}
@@ -122,19 +133,19 @@ export default function AddJobScreen() {
         value={job.salary}
         onChangeText={(text) => {
           const numericText = text.replace(/[^0-9]/g, "");
-          const sanitizedText = Math.max(0, Number(numericText)).toString(); 
+          const sanitizedText = Math.max(0, Number(numericText)).toString();
           setJob({ ...job, salary: sanitizedText });
         }}
-        placeholder="Enter salary"
+        placeholder="ระบุเงินเดือน"
       />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>Location</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>สถานที่ทำงาน</Text>
       <TextInput
         mode="outlined"
         style={styles.input}
         value={job.location}
         onChangeText={(text) => setJob({ ...job, location: text })}
-        placeholder="Enter location"
+        placeholder="ระบุสถานที่ทำงาน"
       />
 
       <Button
@@ -143,7 +154,7 @@ export default function AddJobScreen() {
         style={[styles.button, { backgroundColor: theme.colors.primary }]}
         labelStyle={{ color: theme.colors.onPrimary }}
       >
-        Add Job
+        เพิ่มงาน
       </Button>
     </ScrollView>
   );
