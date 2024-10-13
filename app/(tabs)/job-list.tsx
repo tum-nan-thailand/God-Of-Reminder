@@ -10,32 +10,36 @@ import {
 } from "react-native";
 import { Card, Button } from "react-native-paper";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
-import { DatabaseContext } from "../DatabaseContext"; 
+import { DatabaseContext } from "../DatabaseContext";
 import { useTheme } from "../ThemeProvider";
-import { useNavigation } from "@react-navigation/native"; 
+import { useNavigation } from "@react-navigation/native";
 import { getAllJobs, deleteJob } from "../sqlite/Job/JobData";
 import { JobInterface } from "../sqlite/Job/Job.Interface";
 import { showMessage } from "react-native-flash-message";
 
 export default function JobListScreen() {
   const [jobs, setJobs] = useState<JobInterface[]>([]);
-  const [searchTerm, setSearchTerm] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredJobs, setFilteredJobs] = useState<JobInterface[]>([]);
-  const db: any = useContext(DatabaseContext); 
-  const { theme } = useTheme(); 
-  const navigation = useNavigation(); 
+  const db: any = useContext(DatabaseContext);
+  const { theme } = useTheme();
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchJobs();
   }, [db]);
 
-  // useEffect(() => {
-  //   navigation.setOptions({ headerShown: true });
-  // }, [navigation]);
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      headerBackTitle: "Custom Back",
+      headerBackTitleStyle: { fontSize: 30 },
+    });
+  }, [navigation]);
 
   const fetchJobs = async () => {
     try {
-      const jobList = await getAllJobs(db); 
+      const jobList = await getAllJobs(db);
       setJobs(jobList);
       setFilteredJobs(jobList);
     } catch (error) {
@@ -221,7 +225,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    marginTop:'10%'
+    marginTop: "10%",
   },
   searchInput: {
     padding: 12,

@@ -1,17 +1,17 @@
 import React, { useState, useContext } from "react";
-import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
-import { useTheme } from "./ThemeProvider"; // ดึงธีมจาก ThemeProvider
-import { DatabaseContext } from "./DatabaseContext"; // ดึง Context สำหรับการใช้งาน Database
+import { useTheme } from "./ThemeProvider";
+import { DatabaseContext } from "./DatabaseContext";
 import { addJob } from "./sqlite/Job/JobData";
 import { useRouter } from "expo-router";
-import DateTimePickerModal from "react-native-modal-datetime-picker"; // นำเข้า DateTimePickerModal
-import { Picker } from "@react-native-picker/picker"; // ใช้ Picker สำหรับการเลือกสถานะ
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { Picker } from "@react-native-picker/picker";
 import { showMessage } from "react-native-flash-message";
 
 export default function AddJobScreen() {
-  const { theme } = useTheme(); // ดึงธีมจาก Context
-  const db = useContext(DatabaseContext); // ใช้ Context สำหรับ Database
+  const { theme } = useTheme();
+  const db = useContext(DatabaseContext);
   const router = useRouter();
 
   const [job, setJob] = useState({
@@ -24,13 +24,16 @@ export default function AddJobScreen() {
     location: "",
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [companySuggestions, setCompanySuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const companies = ["บริษัท A", "บริษัท B", "บริษัท C", "บริษัท D", "บริษัท E"];
 
   const handleAddJob = async () => {
     if (!job.company || !job.position || !job.jobdate || !job.status) {
       showMessage({
         message: "ข้อผิดพลาด",
-        description:
-          "กรุณากรอกข้อมูลที่จำเป็นให้ครบ: ชื่อบริษัท, ตำแหน่ง, วันที่สมัคร, และสถานะ",
+        description: "กรุณากรอกข้อมูลที่จำเป็นให้ครบ: ชื่อบริษัท, ตำแหน่ง, วันที่สมัคร, และสถานะ",
         type: "danger",
         icon: "auto",
       });
@@ -56,21 +59,47 @@ export default function AddJobScreen() {
     }
   };
 
+  const handleCompanySearch = (text) => {
+    setJob({ ...job, company: text });
+    if (text) {
+      const filteredCompanies = companies.filter((company) =>
+        company.includes(text)
+      );
+      setCompanySuggestions(filteredCompanies);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: theme.colors.background },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.label, { color: theme.colors.text }]}>ชื่อบริษัท</Text>
       <TextInput
         mode="outlined"
         style={styles.input}
         value={job.company}
-        onChangeText={(text) => setJob({ ...job, company: text })}
+       
         placeholder="ระบุชื่อบริษัท"
       />
+      
+      {showSuggestions && (
+        <FlatList
+          data={companySuggestions}
+          keyExtractor={(item) => item}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                setJob({ ...job, company: item });
+                setShowSuggestions(false);
+              }}
+            >
+              <Text style={styles.suggestionText}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          style={styles.suggestionsContainer}
+        />
+      )}
 
       <Text style={[styles.label, { color: theme.colors.text }]}>ตำแหน่ง</Text>
       <TextInput
@@ -133,8 +162,7 @@ export default function AddJobScreen() {
         value={job.salary}
         onChangeText={(text) => {
           const numericText = text.replace(/[^0-9]/g, "");
-          const sanitizedText = Math.max(0, Number(numericText)).toString();
-          setJob({ ...job, salary: sanitizedText });
+          setJob({ ...job, salary: numericText });
         }}
         placeholder="ระบุเงินเดือน"
       />
@@ -156,13 +184,13 @@ export default function AddJobScreen() {
       >
         เพิ่มงาน
       </Button>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     padding: 20,
   },
   label: {
@@ -189,5 +217,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     borderColor: "#ccc",
+  },
+  suggestionsContainer: {
+    maxHeight: 150,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  suggestionText: {
+    padding: 10,
+    fontSize: 16,
+    color: "#555",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
   },
 });

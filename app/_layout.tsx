@@ -43,11 +43,21 @@ export default function RootLayout() {
     return null; // Show loading or splash screen
   }
 
+  const customeHeader = {
+    headerBackTitle: "กลับ",
+    headerBackTitleStyle: { fontSize: 16 },
+  };
+
   return (
     <DatabaseContext.Provider value={db}>
       <ThemeProvider>
         <FlashMessage position="top" />
-        <Stack screenOptions={{ headerShown: true }}>
+        <Stack
+          screenOptions={{
+            headerShown: true,
+            ...customeHeader,
+          }}
+        >
           <Stack.Screen name="add-job" options={{ title: "Add Job" }} />
           <Stack.Screen name="job-detail" options={{ title: "Job Detail" }} />
           <Stack.Screen name="profile" options={{ title: "Profile" }} />
