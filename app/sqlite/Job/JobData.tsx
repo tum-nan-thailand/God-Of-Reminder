@@ -22,12 +22,9 @@ export const addJob = async (
     location = "",
   } = body;
 
-  // Convert jobdate to 'YYYY-MM-DD' format
-  const formattedDate = new Date(jobdate).toISOString().split("T")[0];
-
   const result = await db.runAsync(
     "INSERT INTO jobs (company, position, jobdate, status, notes, salary, location) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [company, position, formattedDate, status, notes, salary, location]
+    [company, position, jobdate, status, notes, salary, location]
   );
   console.log("Job added with ID:", result.lastInsertRowId);
 };
@@ -56,7 +53,6 @@ export const updateJob = async (
     location = "",
   } = body;
 
-  // Convert jobdate to 'YYYY-MM-DD' format
   const formattedDate = new Date(jobdate).toISOString().split("T")[0];
 
   await db.runAsync(
@@ -72,10 +68,9 @@ export const getAllJobs = async (
   try {
     const allRows = await db.getAllAsync("SELECT * FROM jobs");
 
-    // ตรวจสอบว่าผลลัพธ์เป็น array ที่ว่างหรือไม่
     if (!allRows || allRows.length === 0) {
       console.log("No jobs found in the database.");
-      return []; // คืนค่าเป็น array ว่าง
+      return [];
     }
 
     return allRows;
@@ -85,7 +80,6 @@ export const getAllJobs = async (
   }
 };
 
-// ฟังก์ชันสำหรับดึงข้อมูลงานตาม ID
 export const getJobById = async (db: SQLite.SQLiteDatabase, jobId: number) => {
   try {
     const result = await db.getFirstAsync("SELECT * FROM jobs WHERE id = ?", [
@@ -106,7 +100,6 @@ export const getJobById = async (db: SQLite.SQLiteDatabase, jobId: number) => {
   }
 };
 
-// ฟังก์ชันสำหรับลบงาน
 export const deleteJob = async (db: SQLite.SQLiteDatabase, jobId: number) => {
   try {
     await db.runAsync("DELETE FROM jobs WHERE id = ?", [jobId]);

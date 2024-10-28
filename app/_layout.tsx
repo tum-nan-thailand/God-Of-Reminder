@@ -1,9 +1,8 @@
-// app/_layout.tsx
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { initializeDB } from "./sqlite/Job/Db";
 import { DatabaseContext } from "./DatabaseContext";
-import { ThemeProvider } from "./ThemeProvider"; // นำเข้า ThemeProvider ที่สร้างขึ้น
+import { ThemeProvider } from "./ThemeProvider";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
@@ -19,7 +18,6 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-  // Load Database
   useEffect(() => {
     const setupDatabase = async () => {
       try {
@@ -32,7 +30,6 @@ export default function RootLayout() {
     setupDatabase();
   }, []);
 
-  // Hide SplashScreen after fonts are loaded
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
@@ -40,12 +37,19 @@ export default function RootLayout() {
   }, [fontsLoaded]);
 
   if (!db || !fontsLoaded) {
-    return null; // Show loading or splash screen
+    return null; 
   }
 
   const customeHeader = {
     headerBackTitle: "กลับ",
     headerBackTitleStyle: { fontSize: 16 },
+    headerStyle: {
+      backgroundColor: "#ffa726",
+    },
+    headerTintColor: "#fff",
+    headerTitleStyle: {
+      fontWeight: "bold",
+    },
   };
 
   return (

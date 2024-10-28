@@ -1,5 +1,11 @@
 import React, { useState, useContext } from "react";
-import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
 import { useTheme } from "./ThemeProvider";
 import { DatabaseContext } from "./DatabaseContext";
@@ -8,10 +14,11 @@ import { useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Picker } from "@react-native-picker/picker";
 import { showMessage } from "react-native-flash-message";
+import * as SQLite from "expo-sqlite";
 
 export default function AddJobScreen() {
   const { theme } = useTheme();
-  const db = useContext(DatabaseContext);
+  const db: any = useContext(DatabaseContext);
   const router = useRouter();
 
   const [job, setJob] = useState({
@@ -24,23 +31,34 @@ export default function AddJobScreen() {
     location: "",
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [companySuggestions, setCompanySuggestions] = useState([]);
+  const [companySuggestions, setCompanySuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const companies = ["บริษัท A", "บริษัท B", "บริษัท C", "บริษัท D", "บริษัท E"];
+  const companies = [
+    "บริษัท A",
+    "บริษัท B",
+    "บริษัท C",
+    "บริษัท D",
+    "บริษัท E",
+  ];
 
   const handleAddJob = async () => {
     if (!job.company || !job.position || !job.jobdate || !job.status) {
       showMessage({
         message: "ข้อผิดพลาด",
-        description: "กรุณากรอกข้อมูลที่จำเป็นให้ครบ: ชื่อบริษัท, ตำแหน่ง, วันที่สมัคร, และสถานะ",
+        description:
+          "กรุณากรอกข้อมูลที่จำเป็นให้ครบ: ชื่อบริษัท, ตำแหน่ง, วันที่สมัคร, และสถานะ",
         type: "danger",
         icon: "auto",
       });
       return;
     }
     try {
-      await addJob(db, job);
+      const jobWithStringDate = {
+        ...job,
+        jobdate: job.jobdate.toISOString().split("T")[0],
+      };
+      await addJob(db, jobWithStringDate);
       showMessage({
         message: "สำเร็จ",
         description: "เพิ่มงานเรียบร้อยแล้ว!",
@@ -59,11 +77,11 @@ export default function AddJobScreen() {
     }
   };
 
-  const handleCompanySearch = (text) => {
+  const handleCompanySearch = (text: string) => {
     setJob({ ...job, company: text });
     if (text) {
       const filteredCompanies = companies.filter((company) =>
-        company.includes(text)
+        company.toLowerCase().includes(text.toLowerCase())
       );
       setCompanySuggestions(filteredCompanies);
       setShowSuggestions(true);
@@ -73,124 +91,140 @@ export default function AddJobScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.label, { color: theme.colors.text }]}>ชื่อบริษัท</Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        value={job.company}
-       
-        placeholder="ระบุชื่อบริษัท"
-      />
-      
+    <View style={{ flex: 1 }}>
       {showSuggestions && (
-        <FlatList
-          data={companySuggestions}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                setJob({ ...job, company: item });
-                setShowSuggestions(false);
-              }}
-            >
-              <Text style={styles.suggestionText}>{item}</Text>
-            </TouchableOpacity>
-          )}
-          style={styles.suggestionsContainer}
-        />
+        <View style={styles.suggestionsWrapper}>
+          <FlatList
+            data={companySuggestions}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  setJob({ ...job, company: item });
+                  setShowSuggestions(false);
+                }}
+              >
+                <Text style={styles.suggestionText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            style={styles.suggestionsContainer}
+          />
+        </View>
       )}
-
-      <Text style={[styles.label, { color: theme.colors.text }]}>ตำแหน่ง</Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        value={job.position}
-        onChangeText={(text) => setJob({ ...job, position: text })}
-        placeholder="ระบุตำแหน่งงาน"
-      />
-
-      <Text style={[styles.label, { color: theme.colors.text }]}>วันที่สมัคร</Text>
-      <Button
-        mode="outlined"
-        onPress={() => setShowDatePicker(true)}
-        style={styles.dateButton}
+      
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          { backgroundColor: theme.colors.background },
+        ]}
       >
-        {job.jobdate.toDateString()}
-      </Button>
-      <DateTimePickerModal
-        isVisible={showDatePicker}
-        mode="date"
-        onConfirm={(selectedDate) => {
-          setShowDatePicker(false);
-          setJob({ ...job, jobdate: selectedDate });
-        }}
-        onCancel={() => setShowDatePicker(false)}
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          ชื่อบริษัท
+        </Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          value={job.company}
+          onChangeText={handleCompanySearch}
+          placeholder="ระบุชื่อบริษัท"
+        />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>สถานะ</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={job.status}
-          onValueChange={(itemValue) => setJob({ ...job, status: itemValue })}
-          style={{ color: theme.colors.text }}
+        <Text style={[styles.label, { color: theme.colors.text }]}>ตำแหน่ง</Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          value={job.position}
+          onChangeText={(text) => setJob({ ...job, position: text })}
+          placeholder="ระบุตำแหน่งงาน"
+        />
+
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          วันที่สมัคร
+        </Text>
+        <Button
+          mode="outlined"
+          onPress={() => setShowDatePicker(true)}
+          style={styles.dateButton}
         >
-          <Picker.Item label="เลือกสถานะ" value="" />
-          <Picker.Item label="สมัครแล้ว" value="Applied" />
-          <Picker.Item label="สัมภาษณ์" value="Interview" />
-          <Picker.Item label="ได้รับข้อเสนอ" value="Offered" />
-          <Picker.Item label="ถูกปฏิเสธ" value="Rejected" />
-        </Picker>
-      </View>
+          {job.jobdate.toDateString()}
+        </Button>
+        <DateTimePickerModal
+          isVisible={showDatePicker}
+          mode="date"
+          onConfirm={(selectedDate) => {
+            setShowDatePicker(false);
+            setJob({ ...job, jobdate: selectedDate });
+          }}
+          onCancel={() => setShowDatePicker(false)}
+        />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>หมายเหตุ</Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        multiline
-        numberOfLines={4}
-        value={job.notes}
-        onChangeText={(text) => setJob({ ...job, notes: text })}
-        placeholder="ระบุหมายเหตุ"
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>สถานะ</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={job.status}
+            onValueChange={(itemValue) => setJob({ ...job, status: itemValue })}
+            style={{ color: theme.colors.text }}
+          >
+            <Picker.Item label="เลือกสถานะ" value="" />
+            <Picker.Item label="สมัครแล้ว" value="Applied" />
+            <Picker.Item label="สัมภาษณ์" value="Interview" />
+            <Picker.Item label="ได้รับข้อเสนอ" value="Offered" />
+            <Picker.Item label="ถูกปฏิเสธ" value="Rejected" />
+          </Picker>
+        </View>
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>เงินเดือน</Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        keyboardType="numeric"
-        value={job.salary}
-        onChangeText={(text) => {
-          const numericText = text.replace(/[^0-9]/g, "");
-          setJob({ ...job, salary: numericText });
-        }}
-        placeholder="ระบุเงินเดือน"
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>หมายเหตุ</Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          multiline
+          numberOfLines={4}
+          value={job.notes}
+          onChangeText={(text) => setJob({ ...job, notes: text })}
+          placeholder="ระบุหมายเหตุ"
+        />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>สถานที่ทำงาน</Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        value={job.location}
-        onChangeText={(text) => setJob({ ...job, location: text })}
-        placeholder="ระบุสถานที่ทำงาน"
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          เงินเดือน
+        </Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          keyboardType="numeric"
+          value={job.salary}
+          onChangeText={(text) =>
+            setJob({ ...job, salary: text.replace(/[^0-9]/g, "") })
+          }
+          placeholder="ระบุเงินเดือน"
+        />
 
-      <Button
-        mode="contained"
-        onPress={handleAddJob}
-        style={[styles.button, { backgroundColor: theme.colors.primary }]}
-        labelStyle={{ color: theme.colors.onPrimary }}
-      >
-        เพิ่มงาน
-      </Button>
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          สถานที่ทำงาน
+        </Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          value={job.location}
+          onChangeText={(text) => setJob({ ...job, location: text })}
+          placeholder="ระบุสถานที่ทำงาน"
+        />
+
+        <Button
+          mode="contained"
+          onPress={handleAddJob}
+          style={[styles.button, { backgroundColor: theme.colors.primary }]}
+          labelStyle={{ color: theme.colors.onPrimary }}
+        >
+          เพิ่มงาน
+        </Button>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
   },
   label: {
@@ -220,10 +254,10 @@ const styles = StyleSheet.create({
   },
   suggestionsContainer: {
     maxHeight: 150,
+    backgroundColor: 'white',
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    marginBottom: 15,
   },
   suggestionText: {
     padding: 10,
@@ -231,5 +265,12 @@ const styles = StyleSheet.create({
     color: "#555",
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
+  },
+  suggestionsWrapper: {
+    position: 'absolute',
+    top: 100, // ปรับตามความเหมาะสม
+    left: 20,
+    right: 20,
+    zIndex: 1000,
   },
 });

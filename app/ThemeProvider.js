@@ -1,4 +1,3 @@
-// app/ThemeProvider.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import { useColorScheme } from 'react-native';

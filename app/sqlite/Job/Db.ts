@@ -1,9 +1,8 @@
-// database.ts
 import * as SQLite from "expo-sqlite";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { addJob, getAllJobs } from "./JobData";
-// ฟังก์ชันสำหรับการเปิดฐานข้อมูลแบบ Async
+
 export const initializeDatabase = async () => {
   const db = await SQLite.openDatabaseAsync("jobTracker.db");
 
@@ -25,12 +24,10 @@ export const initializeDatabase = async () => {
 };
 
 
-// ฟังก์ชันเริ่มต้นการทำงานของฐานข้อมูลและเพิ่มข้อมูลตัวอย่าง
 export const initializeDB = async () => {
-  await clearDatabase(); // ลบฐานข้อมูลทั้งหมด
+  await clearDatabase(); 
   const db = await initializeDatabase();
 
-  // เพิ่มข้อมูลตัวอย่าง
   await addJob(db, {
     company: "Company A",
     position: "Software Engineer",
@@ -63,19 +60,16 @@ export const initializeDB = async () => {
   return db;
 };
 
-// ฟังก์ชันสำหรับ export ไฟล์ฐานข้อมูล
 export const exportDatabase = async () => {
   const dbPath = `${FileSystem.documentDirectory}SQLite/jobTracker.db`;
   const destinationPath = `${FileSystem.documentDirectory}jobTracker-exported.db`;
 
   try {
-    // คัดลอกไฟล์ฐานข้อมูลไปยังตำแหน่งที่เข้าถึงได้
     await FileSystem.copyAsync({
       from: dbPath,
       to: destinationPath,
     });
 
-    // แชร์ไฟล์ฐานข้อมูลที่ถูกคัดลอกแล้ว
     await Sharing.shareAsync(destinationPath, {
       mimeType: "application/octet-stream",
       dialogTitle: "Export Database",
@@ -87,36 +81,33 @@ export const exportDatabase = async () => {
   }
 };
 
-// ฟังก์ชันสำหรับปิดฐานข้อมูล
 export const closeDatabase = async (db: SQLite.SQLiteDatabase) => {
   try {
-    await db.closeAsync(); // ปิดฐานข้อมูลที่เปิดอยู่
+    await db.closeAsync(); 
     console.log("Database closed successfully.");
   } catch (error) {
     console.error("Failed to close database:", error);
   }
 };
 
-// ฟังก์ชันสำหรับลบฐานข้อมูลทั้งหมด
 export const clearDatabase = async () => {
   try {
-    const db = await SQLite.openDatabaseAsync("jobTracker.db"); // เปิดฐานข้อมูลเพื่อให้สามารถปิดได้
-    await closeDatabase(db); // ปิดฐานข้อมูลก่อนที่จะลบ
-    await SQLite.deleteDatabaseAsync("jobTracker.db"); // ลบฐานข้อมูล
+    const db = await SQLite.openDatabaseAsync("jobTracker.db"); 
+    await closeDatabase(db); 
+    await SQLite.deleteDatabaseAsync("jobTracker.db"); 
     console.log("Database deleted successfully.");
 
-    const newDb = await initializeDatabase(); // เปิดฐานข้อมูลใหม่อีกครั้งหลังจากลบ
+    const newDb = await initializeDatabase(); 
     return newDb;
   } catch (error) {
     console.error("Failed to delete database:", error);
   }
 };
 
-// ฟังก์ชันสำหรับรีเซ็ตฐานข้อมูลทั้งหมด
 export const resetDatabase = async () => {
   try {
-    await clearDatabase(); // ลบฐานข้อมูลทั้งหมด
-    const db = await initializeDatabase(); // เริ่มต้นฐานข้อมูลใหม่
+    await clearDatabase(); 
+    const db = await initializeDatabase(); 
     console.log("Database reset and re-initialized successfully.");
     return db;
   } catch (error) {

@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { Card, Button } from "react-native-paper";
+import { Card } from "react-native-paper";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import { DatabaseContext } from "../DatabaseContext";
 import { useTheme } from "../ThemeProvider";
@@ -28,14 +28,6 @@ export default function JobListScreen() {
   useEffect(() => {
     fetchJobs();
   }, [db]);
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-      headerBackTitle: "Custom Back",
-      headerBackTitleStyle: { fontSize: 30 },
-    });
-  }, [navigation]);
 
   const fetchJobs = async () => {
     try {
@@ -79,6 +71,21 @@ export default function JobListScreen() {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Applied":
+        return "สมัครแล้ว";
+      case "Interview":
+        return "สัมภาษณ์"; 
+      case "Offered":
+        return "ได้รับข้อเสนอ";
+      case "Rejected":
+        return "ถูกปฏิเสธ";
+      default:
+        return "เลือกสถานะ";
+    }
+  };
+
   if (jobs.length === 0) {
     return (
       <View
@@ -117,102 +124,108 @@ export default function JobListScreen() {
         data={filteredJobs}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <Card
-            style={[
-              styles.card,
-              {
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.primary,
-                borderWidth: 1,
-              },
-            ]}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("edit-job", { jobId: item.id })}
           >
-            <TouchableOpacity
-              style={styles.deleteIcon}
-              onPress={() => handleDeleteJob(item.id)}
+            <Card
+              style={[
+                styles.card,
+                {
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.primary,
+                  borderWidth: 1,
+                },
+              ]}
             >
-              <MaterialIcons
-                name="close"
-                size={24}
-                color={theme.colors.error}
+              <TouchableOpacity
+                style={styles.deleteIcon}
+                onPress={() => handleDeleteJob(item.id)}
+              >
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={theme.colors.error}
+                />
+              </TouchableOpacity>
+              <Card.Title
+                title={
+                  <View style={styles.titleContainer}>
+                    <FontAwesome
+                      name="briefcase"
+                      size={20}
+                      color={theme.colors.primary}
+                      style={styles.iconSpacing}
+                    />
+                    <Text style={styles.titleText}>{item.position}</Text>
+                  </View>
+                }
+                subtitle={
+                  <View style={styles.subtitleContainer}>
+                    <MaterialIcons
+                      name="business"
+                      size={18}
+                      color={theme.colors.textSecondary}
+                      style={styles.iconSpacing}
+                    />
+                    <Text style={styles.subtitleText}>
+                      บริษัท: {item.company}
+                    </Text>
+                  </View>
+                }
               />
-            </TouchableOpacity>
-            <Card.Title
-              title={item.position}
-              subtitle={`บริษัท: ${item.company}`}
-              titleStyle={{
-                color: theme.colors.primary,
-                fontWeight: "bold",
-                fontSize: 22,
-              }}
-              subtitleStyle={{
-                color: theme.colors.textSecondary,
-                fontSize: 16,
-              }}
-            />
-            <Card.Content>
-              <View style={styles.cardContentRow}>
-                <Text style={[styles.text, { color: theme.colors.text }]}>
-                  สถานะ:
-                </Text>
-                <Text
-                  style={[styles.textValue, { color: theme.colors.primary }]}
-                >
-                  {item.status}
-                </Text>
-              </View>
-              <View style={styles.cardContentRow}>
-                <Text style={[styles.text, { color: theme.colors.text }]}>
-                  วันที่สมัคร:
-                </Text>
-                <Text
-                  style={[
-                    styles.textValue,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  {item.jobdate}
-                </Text>
-              </View>
-              {item.notes ? (
+              <Card.Content>
                 <View style={styles.cardContentRow}>
-                  <Text style={[styles.text, { color: theme.colors.text }]}>
-                    หมายเหตุ:
+                  <View style={styles.iconSpacing}>
+                    <MaterialIcons
+                      name="info"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.text,
+                        { color: theme.colors.text },
+                        { marginLeft: 5 },
+                      ]}
+                    >
+                      สถานะ:
+                    </Text>
+                  </View>
+                  <Text
+                    style={[styles.textValue, { color: theme.colors.primary }]}
+                  >
+                    {getStatusLabel(item.status)}
                   </Text>
+                </View>
+                <View style={styles.cardContentRow}>
+                  <View style={styles.iconSpacing}>
+                    <MaterialIcons
+                      name="calendar-today"
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.text,
+                        { color: theme.colors.text },
+                        { marginLeft: 5 },
+                      ]}
+                    >
+                      วันที่สมัคร:
+                    </Text>
+                  </View>
                   <Text
                     style={[
                       styles.textValue,
                       { color: theme.colors.textSecondary },
                     ]}
                   >
-                    {item.notes}
+                    {item.jobdate}
                   </Text>
                 </View>
-              ) : null}
-            </Card.Content>
-            <Card.Actions style={styles.cardActions}>
-              <Button
-                mode="contained"
-                icon={() => (
-                  <FontAwesome
-                    name="pencil"
-                    size={16}
-                    color={theme.colors.onPrimary}
-                  />
-                )}
-                labelStyle={{ color: theme.colors.onPrimary }}
-                style={[
-                  styles.button,
-                  { backgroundColor: theme.colors.primary },
-                ]}
-                onPress={() =>
-                  navigation.navigate("edit-job", { jobId: item.id })
-                }
-              >
-                แก้ไข
-              </Button>
-            </Card.Actions>
-          </Card>
+              </Card.Content>
+            </Card>
+          </TouchableOpacity>
         )}
         style={{ backgroundColor: theme.colors.background }}
         contentContainerStyle={styles.contentContainer}
@@ -220,7 +233,6 @@ export default function JobListScreen() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -232,19 +244,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 25,
     borderWidth: 1.5,
+    borderColor: "#ff9800",
   },
   contentContainer: {
-    paddingBottom: 10,
+    paddingBottom: 20,
   },
   card: {
-    marginVertical: 15,
-    borderRadius: 25,
+    marginVertical: 10,
+    borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 6,
-    position: "relative",
+    elevation: 5,
+    backgroundColor: "#ffffff",
+    padding: 15,
+    borderWidth: 1,
+    borderColor: "#ff9800",
   },
   deleteIcon: {
     position: "absolute",
@@ -252,28 +268,46 @@ const styles = StyleSheet.create({
     right: 10,
     zIndex: 1,
   },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#ff9800",
+    marginLeft: 8,
+  },
+  subtitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 3,
+  },
+  subtitleText: {
+    fontSize: 14,
+    color: "#666666",
+    marginLeft: 5,
+  },
   cardContentRow: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
     marginVertical: 5,
   },
+  iconSpacing: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 3, // ลดระยะห่างระหว่างไอคอนและข้อความให้แน่นขึ้น
+  },
   text: {
-    fontSize: 17,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#333333",
   },
   textValue: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "bold",
-  },
-  button: {
-    marginHorizontal: 8,
-    borderRadius: 10,
-    paddingVertical: 6,
-    paddingHorizontal: 20,
-  },
-  cardActions: {
-    justifyContent: "flex-end",
-    paddingRight: 10,
+    color: "#444444",
   },
   emptyContainer: {
     flex: 1,
@@ -284,5 +318,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
+    color: "#555555",
   },
 });

@@ -115,8 +115,8 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: "center",
-    paddingVertical: 30, // ลด padding ด้านบนเพื่อให้พื้นที่มากขึ้น
-    backgroundColor: "#ff8c00",
+    paddingVertical: 30, 
+    backgroundColor: "#f4511e",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     shadowColor: "#000",
@@ -127,14 +127,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 28, // ลดขนาดตัวอักษรของชื่อแอป
+    fontSize: 28, 
     fontWeight: "bold",
-    marginTop: 5, // ลดระยะห่างด้านบน
+    marginTop: 5,
     textAlign: "center",
     color: "#ffffff",
   },
   subtitle: {
-    fontSize: 14, // ลดขนาดตัวอักษรของคำอธิบายเพื่อให้พอดี
+    fontSize: 14,
     textAlign: "center",
     color: "#ffffff",
   },
@@ -169,12 +169,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   cardTitle: {
-    fontSize: 18, // ลดขนาดตัวอักษรในหัวข้อการ์ดเพื่อให้ไม่โดนกิน
+    fontSize: 18, 
     fontWeight: "bold",
     color: "#333",
   },
   cardText: {
-    fontSize: 14, // ลดขนาดข้อความการ์ดเพื่อให้ดูพอดีขึ้น
+    fontSize: 14, 
     color: "#666",
   },
   button: {

@@ -1,4 +1,3 @@
-// app/theme.ts
 import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 
 export const lightTheme = {
@@ -29,7 +28,6 @@ export const lightTheme = {
       fontFamily: 'SpaceMono',
       fontWeight: 'bold',
     },
-    // เพิ่มฟอนต์ที่เกี่ยวข้องกับการแสดงผลใน Text
     labelLarge: {
       fontFamily: 'SpaceMono',
       fontWeight: 'normal',

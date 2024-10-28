@@ -1,20 +1,26 @@
 import React, { useState, useContext, useEffect } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { Button, Text, TextInput } from "react-native-paper";
-import { useTheme } from "./ThemeProvider"; // ดึงธีมจาก ThemeProvider
-import { DatabaseContext } from "./DatabaseContext"; // ดึง Context สำหรับการใช้งาน Database
+import { useTheme } from "./ThemeProvider";
+import { DatabaseContext } from "./DatabaseContext";
 import { getJobById, updateJob } from "./sqlite/Job/JobData";
 import { useRouter } from "expo-router";
-import DateTimePickerModal from "react-native-modal-datetime-picker"; // นำเข้า DateTimePickerModal
-import { Picker } from "@react-native-picker/picker"; // ใช้ Picker สำหรับการเลือกสถานะ
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams } from "expo-router";
 import { showMessage } from "react-native-flash-message";
 
 export default function EditJobScreen() {
   const { jobId } = useLocalSearchParams();
-  const { theme } = useTheme(); // ดึงธีมจาก Context
+  const { theme } = useTheme();
   const router = useRouter();
-  const db = useContext(DatabaseContext); // ใช้ Context สำหรับการ Database
+  const db = useContext(DatabaseContext);
   const [job, setJob] = useState({
     company: "",
     position: "",
@@ -25,6 +31,16 @@ export default function EditJobScreen() {
     location: "",
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [companySuggestions, setCompanySuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const companies = [
+    "บริษัท A",
+    "บริษัท B",
+    "บริษัท C",
+    "บริษัท D",
+    "บริษัท E",
+  ];
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -73,118 +89,152 @@ export default function EditJobScreen() {
     }
   };
 
+  const handleCompanySearch = (text) => {
+    setJob({ ...job, company: text });
+    if (text) {
+      const filteredCompanies = companies.filter((company) =>
+        company.toLowerCase().includes(text.toLowerCase())
+      );
+      setCompanySuggestions(filteredCompanies);
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: theme.colors.background },
-      ]}
-    >
-      <Text style={[styles.label, { color: theme.colors.text }]}>
-        ชื่อบริษัท
-      </Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        value={job.company}
-        onChangeText={(text) => setJob({ ...job, company: text })}
-        placeholder="ระบุชื่อบริษัท"
-      />
+    <View style={{ flex: 1 }}>
+      {showSuggestions && (
+        <View style={styles.suggestionsWrapper}>
+          <FlatList
+            data={companySuggestions}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  setJob({ ...job, company: item });
+                  setShowSuggestions(false);
+                }}
+              >
+                <Text style={styles.suggestionText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+            style={styles.suggestionsContainer}
+          />
+        </View>
+      )}
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>ตำแหน่ง</Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        value={job.position}
-        onChangeText={(text) => setJob({ ...job, position: text })}
-        placeholder="ระบุตำแหน่งงาน"
-      />
-
-      <Text style={[styles.label, { color: theme.colors.text }]}>
-        วันที่สมัคร
-      </Text>
-      <Button
-        mode="outlined"
-        onPress={() => setShowDatePicker(true)}
-        style={styles.dateButton}
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          { backgroundColor: theme.colors.background },
+        ]}
       >
-        {job.jobdate
-          ? new Date(job.jobdate).toLocaleDateString()
-          : "เลือกวันที่"}
-      </Button>
-      <DateTimePickerModal
-        isVisible={showDatePicker}
-        mode="date"
-        date={job.jobdate ? new Date(job.jobdate) : new Date()}
-        onConfirm={(selectedDate) => {
-          setShowDatePicker(false);
-          setJob({ ...job, jobdate: selectedDate });
-        }}
-        onCancel={() => setShowDatePicker(false)}
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          ชื่อบริษัท
+        </Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          value={job.company}
+          onChangeText={handleCompanySearch}
+          placeholder="ระบุชื่อบริษัท"
+        />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>สถานะ</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={job.status}
-          onValueChange={(itemValue) => setJob({ ...job, status: itemValue })}
-          style={{ color: theme.colors.text }}
+        <Text style={[styles.label, { color: theme.colors.text }]}>ตำแหน่ง</Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          value={job.position}
+          onChangeText={(text) => setJob({ ...job, position: text })}
+          placeholder="ระบุตำแหน่งงาน"
+        />
+
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          วันที่สมัคร
+        </Text>
+        <Button
+          mode="outlined"
+          onPress={() => setShowDatePicker(true)}
+          style={styles.dateButton}
         >
-          <Picker.Item label="เลือกสถานะ" value="" />
-          <Picker.Item label="สมัครแล้ว" value="Applied" />
-          <Picker.Item label="สัมภาษณ์" value="Interview" />
-          <Picker.Item label="ได้รับข้อเสนอ" value="Offered" />
-          <Picker.Item label="ถูกปฏิเสธ" value="Rejected" />
-        </Picker>
-      </View>
+          {job.jobdate
+            ? new Date(job.jobdate).toLocaleDateString()
+            : "เลือกวันที่"}
+        </Button>
+        <DateTimePickerModal
+          isVisible={showDatePicker}
+          mode="date"
+          date={job.jobdate ? new Date(job.jobdate) : new Date()}
+          onConfirm={(selectedDate) => {
+            setShowDatePicker(false);
+            setJob({ ...job, jobdate: selectedDate });
+          }}
+          onCancel={() => setShowDatePicker(false)}
+        />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>หมายเหตุ</Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        multiline
-        numberOfLines={4}
-        value={job.notes}
-        onChangeText={(text) => setJob({ ...job, notes: text })}
-        placeholder="ระบุหมายเหตุ"
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>สถานะ</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={job.status}
+            onValueChange={(itemValue) => setJob({ ...job, status: itemValue })}
+            style={{ color: theme.colors.text }}
+          >
+            <Picker.Item label="เลือกสถานะ" value="" />
+            <Picker.Item label="สมัครแล้ว" value="Applied" />
+            <Picker.Item label="สัมภาษณ์" value="Interview" />
+            <Picker.Item label="ได้รับข้อเสนอ" value="Offered" />
+            <Picker.Item label="ถูกปฏิเสธ" value="Rejected" />
+          </Picker>
+        </View>
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>
-        เงินเดือน
-      </Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        keyboardType="numeric"
-        value={job.salary}
-        onChangeText={(text) => {
-          const numericText = text.replace(/[^0-9]/g, "");
-          const sanitizedText = Math.max(0, Number(numericText)).toString();
-          setJob({ ...job, salary: sanitizedText });
-        }}
-        placeholder="ระบุเงินเดือน"
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>หมายเหตุ</Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          multiline
+          numberOfLines={4}
+          value={job.notes}
+          onChangeText={(text) => setJob({ ...job, notes: text })}
+          placeholder="ระบุหมายเหตุ"
+        />
 
-      <Text style={[styles.label, { color: theme.colors.text }]}>
-        สถานที่ทำงาน
-      </Text>
-      <TextInput
-        mode="outlined"
-        style={styles.input}
-        value={job.location}
-        onChangeText={(text) => setJob({ ...job, location: text })}
-        placeholder="ระบุสถานที่ทำงาน"
-      />
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          เงินเดือน
+        </Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          keyboardType="numeric"
+          value={job.salary}
+          onChangeText={(text) => {
+            const numericText = text.replace(/[^0-9]/g, "");
+            setJob({ ...job, salary: numericText });
+          }}
+          placeholder="ระบุเงินเดือน"
+        />
 
-      <Button
-        mode="contained"
-        onPress={handleUpdateJob}
-        style={[styles.button, { backgroundColor: theme.colors.primary }]}
-        labelStyle={{ color: theme.colors.onPrimary }}
-      >
-        อัปเดตงาน
-      </Button>
-    </ScrollView>
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          สถานที่ทำงาน
+        </Text>
+        <TextInput
+          mode="outlined"
+          style={styles.input}
+          value={job.location}
+          onChangeText={(text) => setJob({ ...job, location: text })}
+          placeholder="ระบุสถานที่ทำงาน"
+        />
+
+        <Button
+          mode="contained"
+          onPress={handleUpdateJob}
+          style={[styles.button, { backgroundColor: theme.colors.primary }]}
+          labelStyle={{ color: theme.colors.onPrimary }}
+        >
+          อัปเดตงาน
+        </Button>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -217,5 +267,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     borderColor: "#ccc",
+  },
+  suggestionsWrapper: {
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    zIndex: 1000,
+  },
+  suggestionsContainer: {
+    maxHeight: 150,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+  },
+  suggestionText: {
+    padding: 10,
+    fontSize: 16,
+    color: "#555",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
   },
 });

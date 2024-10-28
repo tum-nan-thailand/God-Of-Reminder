@@ -1,4 +1,3 @@
-// app/profile.tsx
 import { View, Text, Button } from 'react-native';
 import { useRouter } from 'expo-router';
 
