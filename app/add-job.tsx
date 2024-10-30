@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   suggestionsWrapper: {
     position: 'absolute',
-    top: 100, // ปรับตามความเหมาะสม
+    top: 100,
     left: 20,
     right: 20,
     zIndex: 1000,

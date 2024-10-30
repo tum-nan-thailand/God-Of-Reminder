@@ -221,6 +221,12 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 60,
   },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -233,6 +239,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    marginTop: "20%",
   },
   searchInput: {
     flex: 1,
