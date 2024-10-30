@@ -76,14 +76,37 @@ export default function JobListScreen() {
       case "Applied":
         return "สมัครแล้ว";
       case "Interview":
-        return "สัมภาษณ์"; 
+        return "สัมภาษณ์";
       case "Offered":
         return "ได้รับข้อเสนอ";
       case "Rejected":
         return "ถูกปฏิเสธ";
       default:
-        return "เลือกสถานะ";
+        return "";
     }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Applied":
+        return "#2196F3";  // น้ำเงิน
+      case "Interview":
+        return "#FF9800";  // ส้ม
+      case "Offered":
+        return "#4CAF50";  // เขียว
+      case "Rejected":
+        return "#F44336";  // แดง
+      default:
+        return "#9E9E9E";  // เทา
+    }
+  };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   if (jobs.length === 0) {
@@ -102,23 +125,17 @@ export default function JobListScreen() {
   }
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <TextInput
-        style={[
-          styles.searchInput,
-          {
-            backgroundColor: theme.colors.card,
-            color: theme.colors.text,
-            borderColor: theme.colors.primary,
-          },
-        ]}
-        placeholder="ค้นหางาน..."
-        placeholderTextColor={theme.colors.placeholder}
-        value={searchTerm}
-        onChangeText={handleSearch}
-      />
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.searchContainer}>
+        <MaterialIcons name="search" size={24} color={theme.colors.primary} />
+        <TextInput
+          style={[styles.searchInput, { color: theme.colors.text }]}
+          placeholder="ค้นหาตำแหน่งงาน หรือ บริษัท..."
+          placeholderTextColor={theme.colors.placeholder}
+          value={searchTerm}
+          onChangeText={handleSearch}
+        />
+      </View>
 
       <FlatList
         data={filteredJobs}
@@ -126,198 +143,175 @@ export default function JobListScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => navigation.navigate("edit-job", { jobId: item.id })}
+            style={styles.cardContainer}
           >
-            <Card
-              style={[
-                styles.card,
-                {
-                  backgroundColor: theme.colors.card,
-                  borderColor: theme.colors.primary,
-                  borderWidth: 1,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.deleteIcon}
-                onPress={() => handleDeleteJob(item.id)}
-              >
-                <MaterialIcons
-                  name="close"
-                  size={24}
-                  color={theme.colors.error}
-                />
-              </TouchableOpacity>
-              <Card.Title
-                title={
-                  <View style={styles.titleContainer}>
-                    <FontAwesome
-                      name="briefcase"
-                      size={20}
-                      color={theme.colors.primary}
-                      style={styles.iconSpacing}
-                    />
-                    <Text style={styles.titleText}>{item.position}</Text>
-                  </View>
-                }
-                subtitle={
-                  <View style={styles.subtitleContainer}>
-                    <MaterialIcons
-                      name="business"
-                      size={18}
-                      color={theme.colors.textSecondary}
-                      style={styles.iconSpacing}
-                    />
-                    <Text style={styles.subtitleText}>
-                      บริษัท: {item.company}
+            <Card style={[styles.card, { elevation: 4 }]}>
+              <Card.Content style={styles.cardContent}>
+                <View style={styles.jobHeader}>
+                  <View style={styles.jobTitleContainer}>
+                    <Text style={[styles.positionText, { fontSize: 20 }]} numberOfLines={1}>
+                      {item.position}
                     </Text>
+                    <View style={styles.companyContainer}>
+                      <MaterialIcons name="business" size={16} color="#7f8c8d" />
+                      <Text style={[styles.companyText, { marginLeft: 4 }]} numberOfLines={1}>
+                        {item.company}
+                      </Text>
+                    </View>
                   </View>
-                }
-              />
-              <Card.Content>
-                <View style={styles.cardContentRow}>
-                  <View style={styles.iconSpacing}>
-                    <MaterialIcons
-                      name="info"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                    <Text
-                      style={[
-                        styles.text,
-                        { color: theme.colors.text },
-                        { marginLeft: 5 },
-                      ]}
-                    >
-                      สถานะ:
-                    </Text>
+                  
+                  <View style={styles.rightContainer}>
+                    <View style={[
+                      styles.statusBadge,
+                      { backgroundColor: getStatusColor(item.status) }
+                    ]}>
+                      <Text style={[styles.statusText, { fontSize: 13 }]}>
+                        {getStatusLabel(item.status)}
+                      </Text>
+                    </View>
                   </View>
-                  <Text
-                    style={[styles.textValue, { color: theme.colors.primary }]}
-                  >
-                    {getStatusLabel(item.status)}
-                  </Text>
                 </View>
-                <View style={styles.cardContentRow}>
-                  <View style={styles.iconSpacing}>
-                    <MaterialIcons
-                      name="calendar-today"
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                    <Text
-                      style={[
-                        styles.text,
-                        { color: theme.colors.text },
-                        { marginLeft: 5 },
-                      ]}
-                    >
-                      วันที่สมัคร:
+
+                <View style={[styles.detailsContainer, { marginTop: 12 }]}>
+                  <View style={styles.detailRow}>
+                    <MaterialIcons name="event" size={18} color="#3498db" />
+                    <Text style={[styles.detailText, { color: '#2c3e50' }]}>
+                      {formatDate(item.jobdate)}
                     </Text>
                   </View>
-                  <Text
-                    style={[
-                      styles.textValue,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    {item.jobdate}
-                  </Text>
+                  
+                  {item.salary && (
+                    <View style={styles.detailRow}>
+                      <MaterialIcons name="attach-money" size={18} color="#2ecc71" />
+                      <Text style={[styles.detailText, { color: '#2c3e50' }]}>
+                        {Number(item.salary).toLocaleString()} บาท
+                      </Text>
+                    </View>
+                  )}
+                  
+                  {item.location && (
+                    <View style={styles.detailRow}>
+                      <MaterialIcons name="location-on" size={18} color="#e74c3c" />
+                      <Text style={[styles.detailText, { color: '#2c3e50' }]}>
+                        {item.location}
+                      </Text>
+                    </View>
+                  )}
                 </View>
+                
+                <TouchableOpacity
+                  style={[styles.deleteButton, { position: 'absolute', right: 8, bottom: 8 }]}
+                  onPress={() => handleDeleteJob(item.id)}
+                >
+                  <MaterialIcons name="delete-outline" size={22} color="#e74c3c" />
+                </TouchableOpacity>
               </Card.Content>
             </Card>
           </TouchableOpacity>
         )}
-        style={{ backgroundColor: theme.colors.background }}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={styles.listContainer}
       />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    marginTop: "10%",
+    padding: 16,
+    paddingTop: 60,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   searchInput: {
-    padding: 12,
-    marginBottom: 20,
-    borderRadius: 25,
-    borderWidth: 1.5,
-    borderColor: "#ff9800",
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
   },
-  contentContainer: {
-    paddingBottom: 20,
+  cardContainer: {
+    marginBottom: 12,
   },
   card: {
-    marginVertical: 10,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
-    backgroundColor: "#ffffff",
-    padding: 15,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    marginHorizontal: 2,
+    marginVertical: 4,
     borderWidth: 1,
-    borderColor: "#ff9800",
+    borderColor: '#f0f0f0',
   },
-  deleteIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    zIndex: 1,
+  cardContent: {
+    padding: 16,
   },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+  jobHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  titleText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#ff9800",
-    marginLeft: 8,
-  },
-  subtitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 3,
-  },
-  subtitleText: {
-    fontSize: 14,
-    color: "#666666",
-    marginLeft: 5,
-  },
-  cardContentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginVertical: 5,
-  },
-  iconSpacing: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 3, // ลดระยะห่างระหว่างไอคอนและข้อความให้แน่นขึ้น
-  },
-  text: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#333333",
-  },
-  textValue: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#444444",
-  },
-  emptyContainer: {
+  jobTitleContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    marginRight: 12,
   },
-  emptyText: {
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#555555",
+  rightContainer: {
+    alignItems: 'flex-end',
+  },
+  positionText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 4,
+  },
+  companyText: {
+    fontSize: 16,
+    color: '#7f8c8d',
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 8,
+  },
+  statusText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    padding: 4,
+    marginBottom: 8,
+  },
+  detailsContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingTop: 12,
+    marginTop: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  detailText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#34495e',
+  },
+  listContainer: {
+    paddingBottom: 16,
+  },
+  companyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
 });
