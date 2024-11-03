@@ -89,23 +89,23 @@ export default function JobListScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Applied":
-        return "#2196F3";  // น้ำเงิน
+        return "#2196F3"; // น้ำเงิน
       case "Interview":
-        return "#FF9800";  // ส้ม
+        return "#FF9800"; // ส้ม
       case "Offered":
-        return "#4CAF50";  // เขียว
+        return "#4CAF50"; // เขียว
       case "Rejected":
-        return "#F44336";  // แดง
+        return "#F44336"; // แดง
       default:
-        return "#9E9E9E";  // เทา
+        return "#9E9E9E"; // เทา
     }
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(date).toLocaleDateString("th-TH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -125,7 +125,9 @@ export default function JobListScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <View style={styles.searchContainer}>
         <MaterialIcons name="search" size={24} color={theme.colors.primary} />
         <TextInput
@@ -149,22 +151,34 @@ export default function JobListScreen() {
               <Card.Content style={styles.cardContent}>
                 <View style={styles.jobHeader}>
                   <View style={styles.jobTitleContainer}>
-                    <Text style={[styles.positionText, { fontSize: 20 }]} numberOfLines={1}>
+                    <Text
+                      style={[styles.positionText, { fontSize: 20 }]}
+                      numberOfLines={1}
+                    >
                       {item.position}
                     </Text>
                     <View style={styles.companyContainer}>
-                      <MaterialIcons name="business" size={16} color="#7f8c8d" />
-                      <Text style={[styles.companyText, { marginLeft: 4 }]} numberOfLines={1}>
+                      <MaterialIcons
+                        name="business"
+                        size={16}
+                        color="#7f8c8d"
+                      />
+                      <Text
+                        style={[styles.companyText, { marginLeft: 4 }]}
+                        numberOfLines={1}
+                      >
                         {item.company}
                       </Text>
                     </View>
                   </View>
-                  
+
                   <View style={styles.rightContainer}>
-                    <View style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusColor(item.status) }
-                    ]}>
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        { backgroundColor: getStatusColor(item.status) },
+                      ]}
+                    >
                       <Text style={[styles.statusText, { fontSize: 13 }]}>
                         {getStatusLabel(item.status)}
                       </Text>
@@ -175,35 +189,50 @@ export default function JobListScreen() {
                 <View style={[styles.detailsContainer, { marginTop: 12 }]}>
                   <View style={styles.detailRow}>
                     <MaterialIcons name="event" size={18} color="#3498db" />
-                    <Text style={[styles.detailText, { color: '#2c3e50' }]}>
+                    <Text style={[styles.detailText, { color: "#2c3e50" }]}>
                       {formatDate(item.jobdate)}
                     </Text>
                   </View>
-                  
+
                   {item.salary && (
                     <View style={styles.detailRow}>
-                      <MaterialIcons name="attach-money" size={18} color="#2ecc71" />
-                      <Text style={[styles.detailText, { color: '#2c3e50' }]}>
+                      <MaterialIcons
+                        name="attach-money"
+                        size={18}
+                        color="#2ecc71"
+                      />
+                      <Text style={[styles.detailText, { color: "#2c3e50" }]}>
                         {Number(item.salary).toLocaleString()} บาท
                       </Text>
                     </View>
                   )}
-                  
+
                   {item.location && (
                     <View style={styles.detailRow}>
-                      <MaterialIcons name="location-on" size={18} color="#e74c3c" />
-                      <Text style={[styles.detailText, { color: '#2c3e50' }]}>
+                      <MaterialIcons
+                        name="location-on"
+                        size={18}
+                        color="#e74c3c"
+                      />
+                      <Text style={[styles.detailText, { color: "#2c3e50" }]}>
                         {item.location}
                       </Text>
                     </View>
                   )}
                 </View>
-                
+
                 <TouchableOpacity
-                  style={[styles.deleteButton, { position: 'absolute', right: 8, bottom: 8 }]}
+                  style={[
+                    styles.deleteButton,
+                    { position: "absolute", right: 8, bottom: 8 },
+                  ]}
                   onPress={() => handleDeleteJob(item.id)}
                 >
-                  <MaterialIcons name="delete-outline" size={22} color="#e74c3c" />
+                  <MaterialIcons
+                    name="delete-outline"
+                    size={22}
+                    color="#e74c3c"
+                  />
                 </TouchableOpacity>
               </Card.Content>
             </Card>
@@ -223,19 +252,19 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
     marginBottom: 8,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -257,36 +286,36 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginHorizontal: 2,
     marginVertical: 4,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: "#f0f0f0",
   },
   cardContent: {
     padding: 16,
   },
   jobHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   jobTitleContainer: {
     flex: 1,
     marginRight: 12,
   },
   rightContainer: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   positionText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    fontWeight: "bold",
+    color: "#2c3e50",
     marginBottom: 4,
   },
   companyText: {
     fontSize: 16,
-    color: '#7f8c8d',
+    color: "#7f8c8d",
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -295,9 +324,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   deleteButton: {
     padding: 4,
@@ -305,26 +334,26 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: "#f0f0f0",
     paddingTop: 12,
     marginTop: 16,
   },
   detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
   },
   detailText: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#34495e',
+    color: "#34495e",
   },
   listContainer: {
     paddingBottom: 16,
   },
   companyContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 4,
   },
 });

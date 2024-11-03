@@ -1,18 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
-import { View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { Text, Card } from "react-native-paper";
+import { View, StyleSheet, ScrollView } from "react-native";
+import { Text } from "react-native-paper";
 import { Calendar } from "react-native-calendars";
 import { useTheme } from "../ThemeProvider";
 import { DatabaseContext } from "../DatabaseContext";
 import { getAllJobs } from "../sqlite/Job/JobData";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import { JobInterface } from "../sqlite/Job/Job.Interface";
+import JobCard from "../../components/JobCard";
 
 export default function CalendarScreen() {
   const { theme } = useTheme();
-  const db : any = useContext(DatabaseContext);
-  const router = useRouter();
+  const db: any = useContext(DatabaseContext);
   const [jobs, setJobs] = useState<JobInterface[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [markedDates, setMarkedDates] = useState({});
@@ -70,15 +68,24 @@ export default function CalendarScreen() {
     }
   };
 
-  const onDayPress = (day: { dateString: React.SetStateAction<string>; }) => {
+  const onDayPress = (day: { dateString: any }) => {
     setSelectedDate(day.dateString);
     const newMarkedDates: Record<string, any> = { ...markedDates };
     Object.keys(newMarkedDates).forEach((date) => {
+      const job = jobs.find((job) => job.jobdate.split("T")[0] === date);
+      const selectedColor = job ? getStatusColor(job.status) : "#B0BEC5";
       newMarkedDates[date] = {
         ...newMarkedDates[date],
         selected: date === day.dateString,
+        selectedColor: date === day.dateString ? selectedColor : "#B0BEC5",
       };
     });
+    if (!newMarkedDates[day.dateString]) {
+      newMarkedDates[day.dateString] = {
+        selected: true,
+        selectedColor: "#B0BEC5",
+      };
+    }
     setMarkedDates(newMarkedDates);
   };
 
@@ -105,6 +112,8 @@ export default function CalendarScreen() {
           selectedDayBackgroundColor: theme.colors.primary,
           todayTextColor: theme.colors.primary,
           arrowColor: theme.colors.primary,
+          monthTextColor: theme.colors.primary,
+          selectedDayTextColor: "#FFFFFF",
         }}
       />
 
@@ -138,88 +147,38 @@ export default function CalendarScreen() {
       )}
 
       <ScrollView style={styles.jobList}>
-        {getJobsForSelectedDate().map((job) => (
-          <TouchableOpacity
-            key={job.id}
-            onPress={() => router.push(`/edit-job?jobId=${job.id}`)}
-            style={styles.cardContainer}
-          >
-            <Card style={[styles.card, { elevation: 4 }]}>
-              <Card.Content style={styles.cardContent}>
-                <View style={styles.jobHeader}>
-                  <View style={styles.jobTitleContainer}>
-                    <Text
-                      style={[styles.positionText, { fontSize: 20 }]}
-                      numberOfLines={1}
-                    >
-                      {job.position}
-                    </Text>
-                    <View style={styles.companyContainer}>
-                      <MaterialIcons
-                        name="business"
-                        size={16}
-                        color="#7f8c8d"
-                      />
-                      <Text
-                        style={[styles.companyText, { marginLeft: 4 }]}
-                        numberOfLines={1}
-                      >
-                        {job.company}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.rightContainer}>
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        { backgroundColor: getStatusColor(job.status) },
-                      ]}
-                    >
-                      <Text style={[styles.statusText, { fontSize: 13 }]}>
-                        {getStatusLabel(job.status)}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={[styles.detailsContainer, { marginTop: 12 }]}>
-                  {job.salary && (
-                    <View style={styles.detailRow}>
-                      <MaterialIcons
-                        name="attach-money"
-                        size={18}
-                        color="#2ecc71"
-                      />
-                      <Text style={[styles.detailText, { color: "#2c3e50" }]}>
-                        {Number(job.salary).toLocaleString()} บาท
-                      </Text>
-                    </View>
-                  )}
-
-                  {job.location && (
-                    <View style={styles.detailRow}>
-                      <MaterialIcons
-                        name="location-on"
-                        size={18}
-                        color="#e74c3c"
-                      />
-                      <Text style={[styles.detailText, { color: "#2c3e50" }]}>
-                        {job.location}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </Card.Content>
-            </Card>
-          </TouchableOpacity>
-        ))}
+        {getJobsForSelectedDate().length > 0 ? (
+          getJobsForSelectedDate().map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              getStatusColor={getStatusColor}
+              getStatusLabel={getStatusLabel}
+            />
+          ))
+        ) : (
+          <View style={styles.noJobsContainer}>
+            <Text style={[styles.noJobsText, { color: theme.colors.text }]}>
+              ไม่มีงานในวันนี้
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  noJobsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+  },
+  noJobsText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   container: {
     flex: 1,
     padding: 16,
@@ -262,74 +221,5 @@ const styles = StyleSheet.create({
   },
   jobList: {
     flex: 1,
-  },
-  cardContainer: {
-    marginBottom: 12,
-  },
-  card: {
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    marginHorizontal: 2,
-    marginVertical: 4,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-  },
-  cardContent: {
-    padding: 16,
-  },
-  jobHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  jobInfo: {
-    flex: 1,
-  },
-  positionText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2c3e50",
-    marginBottom: 4,
-  },
-  companyContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  companyText: {
-    fontSize: 16,
-    color: "#7f8c8d",
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  statusText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  detailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  detailText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: "#34495e",
-  },
-  jobTitleContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
-  rightContainer: {
-    alignItems: "flex-end",
-  },
-  detailsContainer: {
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-    paddingTop: 12,
-    marginTop: 16,
   },
 });

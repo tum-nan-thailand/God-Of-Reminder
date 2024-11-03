@@ -62,10 +62,10 @@ export default function RootLayout() {
             ...customeHeader,
           }}
         >
-          <Stack.Screen name="add-job" options={{ title: "Add Job" }} />
-          <Stack.Screen name="job-detail" options={{ title: "Job Detail" }} />
+          <Stack.Screen name="add-job" options={{ title: "เพิ่มงาน" }} />
+          <Stack.Screen name="job-detail" options={{ title: "รายละเอียด" }} />
           <Stack.Screen name="profile" options={{ title: "Profile" }} />
-          <Stack.Screen name="edit-job" options={{ title: "Edit Job" }} />
+          <Stack.Screen name="edit-job" options={{ title: "แก้ไขงาน" }} />
           <Stack.Screen
             name="schedule-interview"
             options={{ title: "Schedule Interview" }}

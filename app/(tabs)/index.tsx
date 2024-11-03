@@ -103,6 +103,21 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  cardJobList: {
+    borderColor: "#ff9800",
+    borderWidth: 1,
+  },
+  cardAddJob: {
+    borderColor: "#4caf50",
+    borderWidth: 1,
+  },
+  cardScheduleInterview: {
+    borderColor: "#03a9f4",
+    borderWidth: 1,
+  },
+  cardIcon: {
+    marginRight: 10,
+  },
   backgroundImage: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -115,7 +130,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: "center",
-    paddingVertical: 30, 
+    paddingVertical: 30,
     backgroundColor: "#f4511e",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
@@ -127,7 +142,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 28, 
+    fontSize: 28,
     fontWeight: "bold",
     marginTop: 5,
     textAlign: "center",
@@ -169,12 +184,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   cardTitle: {
-    fontSize: 18, 
+    fontSize: 18,
     fontWeight: "bold",
     color: "#333",
   },
   cardText: {
-    fontSize: 14, 
+    fontSize: 14,
     color: "#666",
   },
   button: {

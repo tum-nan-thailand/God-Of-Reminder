@@ -34,7 +34,7 @@ export const initializeDB = async () => {
     jobdate: "2024-09-21",
     status: "Applied",
     notes: "Interview on Monday",
-    salary: "$100,000",
+    salary: 100000,
     location: "New York",
   });
   await addJob(db, {
@@ -43,7 +43,7 @@ export const initializeDB = async () => {
     jobdate: "2024-09-18",
     status: "Interview",
     notes: "Interview completed, waiting for response",
-    salary: "$70,000",
+    salary: 70000,
     location: "Los Angeles",
   });
   await addJob(db, {
@@ -52,7 +52,7 @@ export const initializeDB = async () => {
     jobdate: "2024-09-15",
     status: "Offered",
     notes: "Offer accepted, start next month",
-    salary: "$120,000",
+    salary: 120000,
     location: "Chicago",
   });
 

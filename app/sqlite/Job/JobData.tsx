@@ -8,7 +8,7 @@ export const addJob = async (
     jobdate: string;
     status: string;
     notes?: string;
-    salary?: string;
+    salary?: number;
     location?: string;
   }
 ) => {
@@ -39,7 +39,7 @@ export const updateJob = async (
     jobdate: string;
     status: string;
     notes?: string;
-    salary?: string;
+    salary?: number;
     location?: string;
   }
 ) => {
@@ -87,8 +87,6 @@ export const getJobById = async (db: SQLite.SQLiteDatabase, jobId: number) => {
     ]);
 
     if (result) {
-      console.log("fetchedJob", result);
-
       return result;
     } else {
       console.log(`No job found with ID ${jobId}.`);

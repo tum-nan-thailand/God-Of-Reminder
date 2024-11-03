@@ -5,6 +5,6 @@ export interface JobInterface {
   jobdate: string;
   status: string;
   notes?: string;
-  salary?: string;
+  salary?: number;
   location?: string;
 }
