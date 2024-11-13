@@ -106,6 +106,7 @@ export default function CalendarScreen() {
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <Calendar
+        style={{  marginTop : '10%' }}
         onDayPress={onDayPress}
         markedDates={markedDates}
         theme={{

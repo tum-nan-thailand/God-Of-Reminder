@@ -30,8 +30,7 @@ export default function ScheduleInterviewScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
-  const navigation = useNavigation();
-
+  const navigation : any = useNavigation();
   useEffect(() => {
     const initializeData = async () => {
       setIsLoading(true);

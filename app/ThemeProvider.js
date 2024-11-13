@@ -9,7 +9,7 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const colorScheme = useColorScheme();
-  const [theme, setTheme] = useState(colorScheme === 'dark' ? darkTheme : lightTheme);
+  const [theme, setTheme] = useState(lightTheme);
 
   const [fontsLoaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -22,7 +22,7 @@ export const ThemeProvider = ({ children }) => {
   }, [fontsLoaded]);
 
   useEffect(() => {
-    setTheme(colorScheme === 'dark' ? darkTheme : lightTheme);
+    setTheme(lightTheme);
   }, [colorScheme]);
 
   if (!fontsLoaded) {
