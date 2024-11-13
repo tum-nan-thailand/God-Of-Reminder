@@ -10,6 +10,7 @@ export const lightTheme = {
     border: '#cccccc',
     notification: '#fa9c3e',
     accent: '#FFD700',
+    placeholder: 'black',
   },
   fonts: {
     regular: {
